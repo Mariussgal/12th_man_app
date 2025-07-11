@@ -1,7 +1,7 @@
 // Configuration des contrats pour TwelfthMan
 export const CONTRACTS = {
   // ⚠️ REMPLACEZ CETTE ADRESSE PAR VOTRE CONTRAT DÉPLOYÉ SUR CHILIZ TESTNET
-  TWELFTH_MAN: "0x40e2aabc043DF698D29C07f3fd582e80D19e223d", // Votre adresse de contrat TwelfthMan déployé
+  TWELFTH_MAN: "0x1D433F6fDAB22Ea9A4267F74841B4AAA0F5957F4", // Votre adresse de contrat TwelfthMan déployé
   
   // Adresses des tokens sur Chiliz Spicy Testnet (88882)
   // ⚠️ VÉRIFIEZ CES ADRESSES - elles peuvent être différentes sur Spicy Testnet

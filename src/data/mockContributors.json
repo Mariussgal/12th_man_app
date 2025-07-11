@@ -1,0 +1,76 @@
+{
+    "contributors": [
+      { "address": "0x742F3c7c8f4A4a9E6F5b8C3d2E1a9B8c7D6e5F4g", "amount": 15000 },
+      { "address": "0x8c3d2E1a9B8c7D6e5F4g3H2i1J0k9L8m7N6o5P4q", "amount": 12500 },
+      { "address": "0x1a9B8c7D6e5F4g3H2i1J0k9L8m7N6o5P4q3R2s1T", "amount": 11200 },
+      { "address": "0x7D6e5F4g3H2i1J0k9L8m7N6o5P4q3R2s1T0u9V8w", "amount": 9800 },
+      { "address": "0x5F4g3H2i1J0k9L8m7N6o5P4q3R2s1T0u9V8w7X6y", "amount": 8900 },
+      { "address": "0x3H2i1J0k9L8m7N6o5P4q3R2s1T0u9V8w7X6y5Z4a", "amount": 8200 },
+      { "address": "0x1J0k9L8m7N6o5P4q3R2s1T0u9V8w7X6y5Z4a3B2c", "amount": 7500 },
+      { "address": "0x9L8m7N6o5P4q3R2s1T0u9V8w7X6y5Z4a3B2c1D0e", "amount": 7100 },
+      { "address": "0x7N6o5P4q3R2s1T0u9V8w7X6y5Z4a3B2c1D0e9F8g", "amount": 6800 },
+      { "address": "0x5P4q3R2s1T0u9V8w7X6y5Z4a3B2c1D0e9F8g7H6i", "amount": 6300 },
+      { "address": "0x3R2s1T0u9V8w7X6y5Z4a3B2c1D0e9F8g7H6i5J4k", "amount": 5900 },
+      { "address": "0x1T0u9V8w7X6y5Z4a3B2c1D0e9F8g7H6i5J4k3L2m", "amount": 5500 },
+      { "address": "0x9V8w7X6y5Z4a3B2c1D0e9F8g7H6i5J4k3L2m1N0o", "amount": 5200 },
+      { "address": "0x7X6y5Z4a3B2c1D0e9F8g7H6i5J4k3L2m1N0o9P8q", "amount": 4800 },
+      { "address": "0x5Z4a3B2c1D0e9F8g7H6i5J4k3L2m1N0o9P8q7R6s", "amount": 4500 },
+      { "address": "0x3B2c1D0e9F8g7H6i5J4k3L2m1N0o9P8q7R6s5T4u", "amount": 4200 },
+      { "address": "0x1D0e9F8g7H6i5J4k3L2m1N0o9P8q7R6s5T4u3V2w", "amount": 3900 },
+      { "address": "0x9F8g7H6i5J4k3L2m1N0o9P8q7R6s5T4u3V2w1X0y", "amount": 3600 },
+      { "address": "0x7H6i5J4k3L2m1N0o9P8q7R6s5T4u3V2w1X0y9Z8a", "amount": 3300 },
+      { "address": "0x5J4k3L2m1N0o9P8q7R6s5T4u3V2w1X0y9Z8a7B6c", "amount": 3000 },
+      { "address": "0x3L2m1N0o9P8q7R6s5T4u3V2w1X0y9Z8a7B6c5D4e", "amount": 2800 },
+      { "address": "0x1N0o9P8q7R6s5T4u3V2w1X0y9Z8a7B6c5D4e3F2g", "amount": 2600 },
+      { "address": "0x9P8q7R6s5T4u3V2w1X0y9Z8a7B6c5D4e3F2g1H0i", "amount": 2400 },
+      { "address": "0x7R6s5T4u3V2w1X0y9Z8a7B6c5D4e3F2g1H0i9J8k", "amount": 2200 },
+      { "address": "0x5T4u3V2w1X0y9Z8a7B6c5D4e3F2g1H0i9J8k7L6m", "amount": 2000 },
+      { "address": "0x3V2w1X0y9Z8a7B6c5D4e3F2g1H0i9J8k7L6m5N4o", "amount": 1800 },
+      { "address": "0x1X0y9Z8a7B6c5D4e3F2g1H0i9J8k7L6m5N4o3P2q", "amount": 1600 },
+      { "address": "0x9Z8a7B6c5D4e3F2g1H0i9J8k7L6m5N4o3P2q1R0s", "amount": 1500 },
+      { "address": "0x7B6c5D4e3F2g1H0i9J8k7L6m5N4o3P2q1R0s9T8u", "amount": 1400 },
+      { "address": "0x5D4e3F2g1H0i9J8k7L6m5N4o3P2q1R0s9T8u7V6w", "amount": 1300 },
+      { "address": "0x3F2g1H0i9J8k7L6m5N4o3P2q1R0s9T8u7V6w5X4y", "amount": 1200 },
+      { "address": "0x1H0i9J8k7L6m5N4o3P2q1R0s9T8u7V6w5X4y3Z2a", "amount": 1100 },
+      { "address": "0x9J8k7L6m5N4o3P2q1R0s9T8u7V6w5X4y3Z2a1B0c", "amount": 1000 },
+      { "address": "0x7L6m5N4o3P2q1R0s9T8u7V6w5X4y3Z2a1B0c9D8e", "amount": 950 },
+      { "address": "0x5N4o3P2q1R0s9T8u7V6w5X4y3Z2a1B0c9D8e7F6g", "amount": 900 },
+      { "address": "0x3P2q1R0s9T8u7V6w5X4y3Z2a1B0c9D8e7F6g5H4i", "amount": 850 },
+      { "address": "0x1R0s9T8u7V6w5X4y3Z2a1B0c9D8e7F6g5H4i3J2k", "amount": 800 },
+      { "address": "0x9T8u7V6w5X4y3Z2a1B0c9D8e7F6g5H4i3J2k1L0m", "amount": 750 },
+      { "address": "0x7V6w5X4y3Z2a1B0c9D8e7F6g5H4i3J2k1L0m9N8o", "amount": 700 },
+      { "address": "0x5X4y3Z2a1B0c9D8e7F6g5H4i3J2k1L0m9N8o7P6q", "amount": 650 },
+      { "address": "0x3Z2a1B0c9D8e7F6g5H4i3J2k1L0m9N8o7P6q5R4s", "amount": 600 },
+      { "address": "0x1B0c9D8e7F6g5H4i3J2k1L0m9N8o7P6q5R4s3T2u", "amount": 550 },
+      { "address": "0x9D8e7F6g5H4i3J2k1L0m9N8o7P6q5R4s3T2u1V0w", "amount": 500 },
+      { "address": "0x7F6g5H4i3J2k1L0m9N8o7P6q5R4s3T2u1V0w9X8y", "amount": 450 },
+      { "address": "0x5H4i3J2k1L0m9N8o7P6q5R4s3T2u1V0w9X8y7Z6a", "amount": 400 },
+      { "address": "0x3J2k1L0m9N8o7P6q5R4s3T2u1V0w9X8y7Z6a5B4c", "amount": 350 },
+      { "address": "0x1L0m9N8o7P6q5R4s3T2u1V0w9X8y7Z6a5B4c3D2e", "amount": 300 },
+      { "address": "0x9N8o7P6q5R4s3T2u1V0w9X8y7Z6a5B4c3D2e1F0g", "amount": 250 },
+      { "address": "0x7P6q5R4s3T2u1V0w9X8y7Z6a5B4c3D2e1F0g9H8i", "amount": 200 },
+      { "address": "0x5R4s3T2u1V0w9X8y7Z6a5B4c3D2e1F0g9H8i7J6k", "amount": 150 }
+    ],
+    "clubVariations": {
+      "2": {
+        "name": "OL",
+        "shuffleSeed": 84, 
+        "multiplier": 0.8
+      },
+      "4": {
+        "name": "Chelsea",
+        "shuffleSeed": 126,
+        "multiplier": 1.5
+      },
+      "5": {
+        "name": "FC Barcelona", 
+        "shuffleSeed": 168,
+        "multiplier": 1.1
+      },
+      "6": {
+        "name": "Real Madrid",
+        "shuffleSeed": 210,
+        "multiplier": 1.3
+      }
+    }
+  }
