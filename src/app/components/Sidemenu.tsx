@@ -7,7 +7,7 @@ const Sidemenu = () => {
 
   const menuItems = [
     {
-      name: "Homeeeee",
+      name: "Home",
       path: "/",
     },
     {
