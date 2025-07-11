@@ -51,7 +51,6 @@ const Sidemenu = () => {
       name: "Activity",
       path: "/activity",
     },
-
   ];
 
   if (isClub) {
