@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import KYC from '@/models/Kyc';
+import User from '@/models/User';
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -29,6 +30,13 @@ export async function POST(req: NextRequest) {
       affiliationNumber,
       status: 'pending',
     });
+
+    // Mettre à jour le statut kycValidated de l'utilisateur
+    await User.findOneAndUpdate(
+      { walletAddress: clubWalletAddress },
+      { kycValidated: true },
+      { new: true }
+    );
 
     return NextResponse.json({ message: 'Demande KYC soumise avec succès.', kyc: newKyc }, { status: 201 });
   } catch (error) {
