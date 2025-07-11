@@ -41,7 +41,9 @@ export default function MyClubPage() {
   // Wagmi pour écrire sur le smart contract
   const { writeContract, data: txData, isPending: isTxLoading, error: txError } = useWriteContract();
 
-  const { isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash: txHash ?? undefined });
+  const { isSuccess: isTxSuccess } = useWaitForTransactionReceipt({
+    hash: txHash && txHash.startsWith('0x') ? (txHash as `0x${string}`) : undefined
+  });
 
   // Gestion du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
