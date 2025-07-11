@@ -31,12 +31,12 @@ export async function POST(req: NextRequest) {
       status: 'pending',
     });
 
-    // Mettre à jour le statut kycValidated de l'utilisateur
-    await User.findOneAndUpdate(
-      { walletAddress: clubWalletAddress },
-      { kycValidated: true },
-      { new: true }
-    );
+    // Ne pas mettre à jour kycValidated ici, il reste à false tant que non validé manuellement
+    // await User.findOneAndUpdate(
+    //   { walletAddress: clubWalletAddress },
+    //   { kycValidated: true },
+    //   { new: true }
+    // );
 
     return NextResponse.json({ message: 'Demande KYC soumise avec succès.', kyc: newKyc }, { status: 201 });
   } catch (error) {

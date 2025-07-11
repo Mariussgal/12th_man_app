@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useBalance, useDisconnect } from "wagmi";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter, usePathname } from "next/navigation";
@@ -11,6 +11,20 @@ const Sidemenu = () => {
   const { disconnect } = useDisconnect();
   const router = useRouter();
   const pathname = usePathname();
+  const [accountType, setAccountType] = useState<string | null>(null);
+  const [kycValidated, setKycValidated] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isConnected || !address) return;
+    fetch(`/api/user?walletAddress=${address}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const user = await res.json();
+          setAccountType(user.accountType);
+          setKycValidated(!!user.kycValidated);
+        }
+      });
+  }, [isConnected, address]);
   
   // Récupérer le solde ETH
   const { data: balance } = useBalance({
@@ -80,6 +94,21 @@ const Sidemenu = () => {
               </button>
             </li>
           ))}
+          {/* Onglet My club, visible seulement pour club */}
+          {isConnected && address && accountType === 'club' && (
+            <li key="My club">
+              <button
+                onClick={() => router.push("/my-club")}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans ${
+                  pathname === "/my-club"
+                    ? "bg-white/10 backdrop-blur-md text-white "
+                    : "text-gray-300 hover:text-white hover:bg-white/5 hover:backdrop-blur-sm"
+                }`}
+              >
+                <span className="font-medium">My club</span>
+              </button>
+            </li>
+          )}
         </ul>
       </nav>
 
