@@ -6,6 +6,7 @@ import Aurora from "./components/Aurora";
 import Header from "./components/Header";
 import Sidemenu from "./components/Sidemenu";
 import { Providers } from './providers';
+import AccountGate from "./components/AccountGate";
 
 
 const geistSans = Geist({
@@ -52,6 +53,7 @@ export default function RootLayout({
         <div className="ml-64 min-h-screen flex flex-col relative z-10">
           {/* Top Header */}
           <Header/>
+          <AccountGate />
 
           {/* Main Content */}
           <main className="flex-1">
