@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { useAccount, useBalance, useDisconnect } from "wagmi";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useRouter, usePathname } from "next/navigation";
 
 const Sidemenu = () => {
   const [activeItem, setActiveItem] = useState("Home");
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+  const router = useRouter();
+  const pathname = usePathname();
   
   // Récupérer le solde ETH
   const { data: balance } = useBalance({
@@ -31,12 +34,17 @@ const Sidemenu = () => {
       name: "How it works",
       path: "/how-it-works",
     },
-
   ];
 
   // Fonction pour formater l'adresse
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-3)}`;
+  };
+
+  // Fonction pour gérer la navigation
+  const handleNavigation = (item: typeof menuItems[0]) => {
+    setActiveItem(item.name);
+    router.push(item.path);
   };
 
   return (
@@ -54,15 +62,14 @@ const Sidemenu = () => {
           {menuItems.map((item) => (
             <li key={item.name}>
               <button
-                onClick={() => setActiveItem(item.name)}
+                onClick={() => handleNavigation(item)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans ${
-                  activeItem === item.name
+                  pathname === item.path
                     ? "bg-white/10 backdrop-blur-md text-white "
                     : "text-gray-300 hover:text-white hover:bg-white/5 hover:backdrop-blur-sm"
                 }`}
               >
                 <span className="font-medium">{item.name}</span>
-      
               </button>
             </li>
           ))}
@@ -125,4 +132,4 @@ const Sidemenu = () => {
   );
 };
 
-export default Sidemenu; 
+export default Sidemenu;
