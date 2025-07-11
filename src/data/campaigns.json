@@ -30,7 +30,7 @@
   {
     "id": 4,
     "clubName": "Chelsea",
-    "league": "Premier League²",
+    "league": "Premier League",
     "targetAmount": 8000,
     "currentAmount": 3200,
     "interestRate": 45,

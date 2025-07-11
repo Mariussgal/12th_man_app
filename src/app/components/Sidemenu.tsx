@@ -7,30 +7,22 @@ const Sidemenu = () => {
 
   const menuItems = [
     {
-      name: "Homeeeee",
+      name: "Home",
       path: "/",
     },
-    {
-      name: "Marketplace", 
-      path: "/marketplace",
-    },
-    {
-      name: "Shop",
-      path: "/shop",
-    },
-    {
-      name: "Competitions",
-      path: "/competitions",
-    },
-
     {
       name: "Leaderboard",
       path: "/leaderboard",
     },
     {
-      name: "Activity",
-      path: "/activity",
+      name: "Profile",
+      path: "/profile",
     },
+    {
+      name: "How it works",
+      path: "/how-it-works",
+    },
+
   ];
 
     return (
@@ -43,7 +35,7 @@ const Sidemenu = () => {
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 p-4 mt-15">
+      <nav className="flex-1 p-4 mt-40">
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.name}>
