@@ -1,9 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useAccount } from "wagmi";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const Sidemenu = () => {
   const [activeItem, setActiveItem] = useState("Home");
+  const { address, isConnected } = useAccount();
+  const [isClub, setIsClub] = useState(false);
+
+  useEffect(() => {
+    if (!isConnected || !address) {
+      setIsClub(false);
+      return;
+    }
+    fetch(`/api/user?walletAddress=${address}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(user => {
+        setIsClub(user?.accountType === "club");
+      })
+      .catch(() => setIsClub(false));
+  }, [address, isConnected]);
 
   const menuItems = [
     {
@@ -34,14 +51,21 @@ const Sidemenu = () => {
       name: "Activity",
       path: "/activity",
     },
+
   ];
+
+  if (isClub) {
+    menuItems.push({ name: "Club", path: "/club" });
+  }
 
     return (
     <div className="fixed left-0 top-0 h-full w-64 bg-transparent flex flex-col z-40 font-sans">
       {/* Logo/Header */}
       <div className="p-6">
         <div className="flex items-center space-x-3">
-          <h1 className="text-xl font-bold text-white font-sans">12th Man</h1>
+          <Link href="/">
+            <h1 className="text-xl font-bold text-white font-sans cursor-pointer hover:text-red-400 transition-colors">12th Man</h1>
+          </Link>
         </div>
       </div>
 
@@ -50,17 +74,17 @@ const Sidemenu = () => {
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.name}>
-              <button
-                onClick={() => setActiveItem(item.name)}
-                                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans ${
+              <Link
+                href={item.path}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans ${
                   activeItem === item.name
                     ? "bg-white/10 backdrop-blur-md text-white "
                     : "text-gray-300 hover:text-white hover:bg-white/5 hover:backdrop-blur-sm"
                 }`}
+                onClick={() => setActiveItem(item.name)}
               >
                 <span className="font-medium">{item.name}</span>
-      
-              </button>
+              </Link>
             </li>
           ))}
         </ul>

@@ -19,11 +19,12 @@ export default function AccountGate() {
   const [error, setError] = useState("");
   const router = useRouter();
   const pathname = usePathname();
+  const [kycPopupClosed, setKycPopupClosed] = useState(false);
+  const [hasSubmittedKyc, setHasSubmittedKyc] = useState(false);
 
   // Vérifie si l'utilisateur existe déjà
   useEffect(() => {
     if (!isConnected || !address) return;
-    console.log('Vérification API user pour', address);
     setLoading(true);
     fetch(`/api/user?walletAddress=${address}`)
       .then(async (res) => {
@@ -32,8 +33,26 @@ export default function AccountGate() {
           const user = await res.json();
           console.log('Utilisateur trouvé:', user);
           setAccountType(user.accountType);
-          if (user.accountType === "club" && !user.kycValidated) {
-            setKycNeeded(true);
+          if (user.accountType === "club") {
+            // Vérifie s'il existe une demande KYC
+            fetch(`/api/kyc/status?walletAddress=${address}`)
+              .then(res => res.ok ? res.json() : null)
+              .then(kyc => {
+                if (kyc && kyc.status) {
+                  setHasSubmittedKyc(true);
+                  if (kyc.status === "pending" || kyc.status === "rejected") {
+                    setKycNeeded(true);
+                  } else {
+                    setKycNeeded(false);
+                  }
+                } else {
+                  setHasSubmittedKyc(false);
+                  setKycNeeded(true);
+                }
+              });
+          }
+          if (user.accountType === "club" && user.kycValidated) {
+            setKycNeeded(false);
           }
         } else if (res.status === 404) {
           console.log('Aucun utilisateur trouvé, affichage modal de choix');
@@ -48,6 +67,11 @@ export default function AccountGate() {
       })
       .finally(() => setLoading(false));
   }, [isConnected, address]);
+
+  // Réinitialise la fermeture de la popup si on change de wallet
+  useEffect(() => {
+    setKycPopupClosed(false);
+  }, [address]);
 
   // Gère le choix du type de compte
   const handleSelect = async (type: string) => {
@@ -103,11 +127,18 @@ export default function AccountGate() {
     );
   }
 
-  // Affiche un message si KYC requis
-  if (kycNeeded && pathname !== "/kyc") {
+  // Affiche un message si KYC requis UNIQUEMENT si aucune demande KYC n'a été soumise
+  if (kycNeeded && pathname !== "/kyc" && !kycPopupClosed && !hasSubmittedKyc) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-gray-900 rounded-xl p-8 max-w-sm w-full border border-gray-700 shadow-lg text-center">
+        <div className="bg-gray-900 rounded-xl p-8 max-w-sm w-full border border-gray-700 shadow-lg text-center relative">
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-white text-xl font-bold"
+            onClick={() => setKycPopupClosed(true)}
+            aria-label="Fermer"
+          >
+            ×
+          </button>
           <h2 className="text-xl font-bold text-white mb-4">Vérification KYC requise</h2>
           <p className="text-gray-300 mb-4">Vous devez compléter le KYC pour accéder aux fonctionnalités club.</p>
           <button className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all" onClick={() => router.push("/kyc") }>
