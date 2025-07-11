@@ -9,7 +9,7 @@
     "duration": "3 months",
     "endDate": "2025-06-15",
     "description": "Financement pour améliorer les infrastructures du club",
-    "clubLogo": "/logo/FCNantes.jpg",
+    "clubLogo": "/logo/PSG.png",
     "backers": 0,
     "daysLeft": 90
   },
@@ -23,7 +23,7 @@
     "duration": "3 months",
     "endDate": "2025-04-15",
     "description": "Funding for purchasing a new midfielder",
-    "clubLogo": "/logo/FCNantes.jpg",
+    "clubLogo": "/logo/OL.png",
     "backers": 167,
     "daysLeft": 18
   },
@@ -97,4 +97,4 @@
     "backers": 178,
     "daysLeft": 5
   }
-] 
+]

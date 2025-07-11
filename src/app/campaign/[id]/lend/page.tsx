@@ -265,8 +265,12 @@ export default function LendPage() {
         
         <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6">
           <div className="flex items-center space-x-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-3xl">
-              {campaign.clubLogo}
+            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+              <img 
+                src={campaign.clubLogo} 
+                alt={`Logo ${campaign.clubName}`}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">
