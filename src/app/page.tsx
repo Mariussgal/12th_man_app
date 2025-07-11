@@ -10,9 +10,17 @@ import { CONTRACTS, TWELFTH_MAN_ABI } from "../config/contracts";
 export default function Home() {
   const campaigns = campaignsData;
   const [flippedCards, setFlippedCards] = useState<{[key: number]: boolean}>({});
+  const [showDescription, setShowDescription] = useState<{[key: number]: boolean}>({});
 
   const toggleFlip = (campaignId: number) => {
     setFlippedCards(prev => ({
+      ...prev,
+      [campaignId]: !prev[campaignId]
+    }));
+  };
+
+  const toggleDescription = (campaignId: number) => {
+    setShowDescription(prev => ({
       ...prev,
       [campaignId]: !prev[campaignId]
     }));
@@ -281,132 +289,155 @@ export default function Home() {
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-white/10 rounded-3xl backdrop-blur-md border border-white/30" />
                 
-                <div className="relative p-8 rounded-3xl h-full flex flex-col justify-between">
-                  <div>
-                    {/* Back Header */}
-                    <div className="flex items-center justify-between mb-8">
-                       <div>
-                         <CampaignInfo campaignId={campaign.id}>
-                           {({ clubName, isLoading }) => (
-                             <h3 className="text-2xl font-bold text-white mb-1">
-                               {isLoading ? '...' : (clubName || campaign.clubName)}
-                             </h3>
-                           )}
-                         </CampaignInfo>
-                         <p className="text-gray-300">Detailed Information</p>
-                       </div>
-                       <div className="w-16 h-16 rounded-2xl flex items-center justify-center  overflow-hidden">
-                         <Image
-                           src={campaign.clubLogo}
-                           alt={`${campaign.clubName} logo`}
-                           width={56}
-                           height={56}
-                           className="object-contain"
-                         />
-                       </div>
-                     </div>
-
-                    {/* Detailed Stats */}
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <CampaignInfo campaignId={campaign.id}>
-                          {({ annualInterestRate, clubName, contributorsCount, collectedAmount, isLoading }) => {
-                            const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
-                            const displayRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
-                            
-                            return (
-                              <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                                <div className="text-2xl font-bold text-green-400">
-                                  {isLoading ? '...' : displayRate}%
-                                </div>
-                                <div className="text-sm text-gray-300">Annual Yield</div>
-                              </div>
-                            );
-                          }}
-                        </CampaignInfo>
-                        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                          <div className="text-2xl font-bold text-blue-400">{campaign.daysLeft}</div>
-                          <div className="text-sm text-gray-300">Days Left</div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                        <div className="text-lg font-bold text-white mb-2">Investment Details</div>
-                        <div className="space-y-2 text-sm text-gray-300">
-                          <div className="flex justify-between">
-                            <span>Target Amount:</span>
-                            <CampaignInfo campaignId={campaign.id}>
-                              {({ targetAmount, clubName, contributorsCount, collectedAmount, isLoading }) => {
-                                const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
-                                const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
-                                
-                                return (
-                                  <span className="text-white font-medium">
-                                    {isLoading ? '...' : formatCurrency(displayTarget)}
-                                  </span>
-                                );
-                              }}
-                            </CampaignInfo>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Current Funding:</span>
-                            <CampaignInfo campaignId={campaign.id}>
-                              {({ collectedAmount, clubName, contributorsCount, isLoading }) => {
-                                const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
-                                const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
-                                
-                                return (
-                                  <span className="text-white font-medium">
-                                    {isLoading ? '...' : formatCurrency(displayAmount)}
-                                  </span>
-                                );
-                              }}
-                            </CampaignInfo>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Duration:</span>
-                            <span className="text-white font-medium">{campaign.duration}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Total Investors:</span>
-                            <CampaignInfo campaignId={campaign.id}>
-                              {({ contributorsCount, clubName, collectedAmount, isLoading }) => {
-                                const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
-                                const displayInvestors = hasSmartContractData ? contributorsCount : campaign.backers;
-                                
-                                return (
-                                  <span className="text-white font-medium">
-                                    {isLoading ? '...' : displayInvestors}
-                                  </span>
-                                );
-                              }}
-                            </CampaignInfo>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white/10 rounded-2xl p-3 backdrop-blur-sm">
-                        <div className="text-lg font-bold text-white ">Project Description</div>
-            
-                      </div>
+                {showDescription[campaign.id] ? (
+                  /* Full Description View */
+                  <div className="relative p-8 rounded-3xl h-full flex flex-col">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl backdrop-blur-md border border-white/20 transition-all duration-500 group-hover:border-white/40 group-hover:from-white/15 group-hover:to-white/10" />
+                    <div className="relative z-10 flex items-center justify-center mb-8">
+                      <h3 className="text-2xl font-bold text-white">Project Description</h3>
+                      <button 
+                        onClick={() => toggleDescription(campaign.id)}
+                        className="absolute right-0 text-gray-300 hover:text-white transition-colors text-xl"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="relative z-10 flex-1 flex items-center justify-center">
+                      <p className="text-white text-xl leading-relaxed text-center max-w-md">
+                        {campaign.description}
+                      </p>
                     </div>
                   </div>
+                ) : (
+                  /* Normal Back Face Content */
+                  <div className="relative p-8 rounded-3xl h-full flex flex-col justify-between">
+                    <div>
+                      {/* Back Header */}
+                      <div className="flex items-center justify-between mb-8">
+                         <div>
+                           <CampaignInfo campaignId={campaign.id}>
+                             {({ clubName, isLoading }) => (
+                               <h3 className="text-2xl font-bold text-white mb-1">
+                                 {isLoading ? '...' : (clubName || campaign.clubName)}
+                               </h3>
+                             )}
+                           </CampaignInfo>
+                         </div>
+                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center  overflow-hidden">
+                           <Image
+                             src={campaign.clubLogo}
+                             alt={`${campaign.clubName} logo`}
+                             width={56}
+                             height={56}
+                             className="object-contain"
+                           />
+                         </div>
+                       </div>
 
-                  <div className="space-y-3 mt-2">
-                  <Link href={`/campaign/${campaign.id}/lend`}>
-                <button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all transform group-hover:scale-105">
-                  Lend
-                </button>
-              </Link>
-                    
-                    <button 
-                      onClick={() => toggleFlip(campaign.id)}
-                      className="w-full py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors"
-                    >
-                      ← Back to Overview
-                    </button>
+                      {/* Detailed Stats */}
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <CampaignInfo campaignId={campaign.id}>
+                            {({ annualInterestRate, clubName, contributorsCount, collectedAmount, isLoading }) => {
+                              const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                              const displayRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
+                              
+                              return (
+                                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                                  <div className="text-2xl font-bold text-green-400">
+                                    {isLoading ? '...' : displayRate}%
+                                  </div>
+                                  <div className="text-sm text-gray-300">Annual Yield</div>
+                                </div>
+                              );
+                            }}
+                          </CampaignInfo>
+                          <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                            <div className="text-2xl font-bold text-blue-400">{campaign.daysLeft}</div>
+                            <div className="text-sm text-gray-300">Days Left</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                          <div className="text-lg font-bold text-white mb-2">Investment Details</div>
+                          <div className="space-y-2 text-sm text-gray-300">
+                            <div className="flex justify-between">
+                              <span>Target Amount:</span>
+                              <CampaignInfo campaignId={campaign.id}>
+                                {({ targetAmount, clubName, contributorsCount, collectedAmount, isLoading }) => {
+                                  const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                  const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
+                                  
+                                  return (
+                                    <span className="text-white font-medium">
+                                      {isLoading ? '...' : formatCurrency(displayTarget)}
+                                    </span>
+                                  );
+                                }}
+                              </CampaignInfo>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Current Funding:</span>
+                              <CampaignInfo campaignId={campaign.id}>
+                                {({ collectedAmount, clubName, contributorsCount, isLoading }) => {
+                                  const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                  const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
+                                  
+                                  return (
+                                    <span className="text-white font-medium">
+                                      {isLoading ? '...' : formatCurrency(displayAmount)}
+                                    </span>
+                                  );
+                                }}
+                              </CampaignInfo>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Duration:</span>
+                              <span className="text-white font-medium">{campaign.duration}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Total Investors:</span>
+                              <CampaignInfo campaignId={campaign.id}>
+                                {({ contributorsCount, clubName, collectedAmount, isLoading }) => {
+                                  const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                  const displayInvestors = hasSmartContractData ? contributorsCount : campaign.backers;
+                                  
+                                  return (
+                                    <span className="text-white font-medium">
+                                      {isLoading ? '...' : displayInvestors}
+                                    </span>
+                                  );
+                                }}
+                              </CampaignInfo>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => toggleDescription(campaign.id)}
+                          className="w-full bg-white/10 hover:bg-white/20 rounded-2xl p-3 backdrop-blur-sm transition-all cursor-pointer"
+                        >
+                          <div className="text-lg font-bold text-white text-center">Project Description</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 mt-2">
+                    <Link href={`/campaign/${campaign.id}/lend`}>
+                  <button className="w-full flex justify-center items-center bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all transform ">
+                    Lend
+                  </button>
+                </Link>
+                      
+                      <button 
+                        onClick={() => toggleFlip(campaign.id)}
+                        className="w-full py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                      >
+                        ← Back to Overview
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
