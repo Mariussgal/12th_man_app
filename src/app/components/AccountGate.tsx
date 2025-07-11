@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
+import { useRouter, usePathname } from "next/navigation";
 
 const ACCOUNT_TYPES = [
   { value: "user", label: "Je veux prêter à un club" },
@@ -16,6 +17,8 @@ export default function AccountGate() {
   const [accountType, setAccountType] = useState<string | null>(null);
   const [kycNeeded, setKycNeeded] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Vérifie si l'utilisateur existe déjà
   useEffect(() => {
@@ -60,7 +63,10 @@ export default function AccountGate() {
       if (res.ok) {
         setAccountType(type);
         setShowModal(false);
-        if (type === "club") setKycNeeded(true);
+        if (type === "club") {
+          setKycNeeded(true);
+          router.push("/kyc");
+        }
       } else {
         const data = await res.json();
         setError(data.error || "Erreur lors de la création du compte.");
@@ -98,14 +104,14 @@ export default function AccountGate() {
   }
 
   // Affiche un message si KYC requis
-  if (kycNeeded) {
+  if (kycNeeded && pathname !== "/kyc") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="bg-gray-900 rounded-xl p-8 max-w-sm w-full border border-gray-700 shadow-lg text-center">
           <h2 className="text-xl font-bold text-white mb-4">Vérification KYC requise</h2>
           <p className="text-gray-300 mb-4">Vous devez compléter le KYC pour accéder aux fonctionnalités club.</p>
-          <button className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all" disabled>
-            Module KYC à venir
+          <button className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all" onClick={() => router.push("/kyc") }>
+            Remplir le formulaire KYC
           </button>
         </div>
       </div>
