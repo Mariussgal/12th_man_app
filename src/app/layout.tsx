@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import '@rainbow-me/rainbowkit/styles.css';
 import Aurora from "./components/Aurora";
+import Header from "./components/Header";
 import Sidemenu from "./components/Sidemenu";
+import { Providers } from './providers';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,15 +34,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950 text-white`}
       >
-        {/* Aurora Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <Aurora
-            colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
-            blend={0.5}
-            amplitude={1.0}
-            speed={0.5}
-          />
-        </div>
+        <Providers>
+          {/* Aurora Background */}
+          <div className="fixed inset-0 z-0 pointer-events-none">
+            <Aurora
+              colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
+              blend={0.5}
+              amplitude={1.0}
+              speed={0.5}
+            />
+          </div>
 
         {/* Sidemenu */}
         <Sidemenu />
@@ -46,16 +51,7 @@ export default function RootLayout({
         {/* Main Layout with offset for sidebar */}
         <div className="ml-64 min-h-screen flex flex-col relative z-10">
           {/* Top Header */}
-          <header className=" bg-transparent backdrop-blur-sm sticky top-0 z-50">
-            <div className="px-6 py-4">
-              <div className="flex justify-end items-center">
-                {/* Wallet Connect Button */}
-                <button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 font-sans">
-                  Connect Wallet
-                </button>
-              </div>
-            </div>
-          </header>
+          <Header/>
 
           {/* Main Content */}
           <main className="flex-1">
@@ -76,6 +72,7 @@ export default function RootLayout({
             </div>
           </footer>
         </div>
+        </Providers>
       </body>
     </html>
   );

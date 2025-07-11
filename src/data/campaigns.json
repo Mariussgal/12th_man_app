@@ -1,6 +1,20 @@
 [
   {
     "id": 1,
+    "clubName": "Olympique Lyonnais",
+    "league": "Ligue 1",
+    "targetAmount": 10000,
+    "currentAmount": 0,
+    "interestRate": 40,
+    "duration": "3 months",
+    "endDate": "2025-06-15",
+    "description": "Financement pour améliorer les infrastructures du club",
+    "clubLogo": "/logo/FCNantes.jpg",
+    "backers": 0,
+    "daysLeft": 90
+  },
+  {
+    "id": 2,
     "clubName": "FC Nantes",
     "league": "Ligue 1",
     "targetAmount": 15000,
@@ -14,7 +28,7 @@
     "daysLeft": 18
   },
   {
-    "id": 2,
+    "id": 3,
     "clubName": "Olympique de Marseille",
     "league": "Ligue 1",
     "targetAmount": 25000,
@@ -28,7 +42,7 @@
     "daysLeft": 25
   },
   {
-    "id": 3,
+    "id": 4,
     "clubName": "AS Saint-Étienne",
     "league": "Ligue 2",
     "targetAmount": 8000,
@@ -42,7 +56,7 @@
     "daysLeft": 12
   },
   {
-    "id": 4,
+    "id": 5,
     "clubName": "RC Lens",
     "league": "Ligue 1",
     "targetAmount": 12000,
@@ -56,7 +70,7 @@
     "daysLeft": 8
   },
   {
-    "id": 5,
+    "id": 6,
     "clubName": "Stade Rennais",
     "league": "Ligue 1",
     "targetAmount": 18000,
@@ -70,7 +84,7 @@
     "daysLeft": 42
   },
   {
-    "id": 6,
+    "id": 7,
     "clubName": "Montpellier HSC",
     "league": "Ligue 1",
     "targetAmount": 10000,

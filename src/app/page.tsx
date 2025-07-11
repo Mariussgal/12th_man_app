@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import campaignsData from "../data/campaigns.json";
+import Link from "next/link";
 
 export default function Home() {
   const campaigns = campaignsData;
@@ -246,9 +247,11 @@ export default function Home() {
                   </div>
 
                   <div className="space-y-3 mt-2">
-                    <button className="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25">
-                      Invest Now
-                    </button>
+                  <Link href={`/campaign/${campaign.id}/lend`}>
+                <button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all transform group-hover:scale-105">
+                  Lend
+                </button>
+              </Link>
                     
                     <button 
                       onClick={() => toggleFlip(campaign.id)}
