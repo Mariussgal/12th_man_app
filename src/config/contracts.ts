@@ -92,6 +92,37 @@ export const TWELFTH_MAN_ABI = [
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "pure",
     "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "_contributor", "type": "address"}],
+    "name": "getUserContributions",
+    "outputs": [{"internalType": "uint256[]", "name": "", "type": "uint256[]"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint256", "name": "_campaignId", "type": "uint256"},
+      {"internalType": "address", "name": "_contributor", "type": "address"}
+    ],
+    "name": "canClaimRefund",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "_campaignId", "type": "uint256"}],
+    "name": "claimRefund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "_campaignId", "type": "uint256"}],
+    "name": "getCampaignStatus",
+    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const;
 
