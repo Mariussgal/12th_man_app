@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 
 export default function KycPage() {
   const { address } = useAccount();
+  const router = useRouter();
   const [form, setForm] = useState({
     clubWalletAddress: address || "",
     clubName: "",
@@ -38,6 +40,14 @@ export default function KycPage() {
       const data = await res.json();
       if (res.ok) {
         setSuccess("Votre demande KYC a bien été soumise. Elle est en attente de validation.");
+        // Stocker localement que le KYC a été soumis
+        if (address) {
+          localStorage.setItem(`kyc_submitted_${address}`, 'true');
+        }
+        // Rediriger vers la page d'accueil après 2 secondes
+        setTimeout(() => {
+          router.push("/");
+        }, 2000);
       } else {
         setError(data.message || "Erreur lors de la soumission du KYC.");
       }

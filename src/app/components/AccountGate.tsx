@@ -23,6 +23,15 @@ export default function AccountGate() {
   // Vérifie si l'utilisateur existe déjà
   useEffect(() => {
     if (!isConnected || !address) return;
+    
+    // Vérifier d'abord si le KYC a été soumis ou fermé manuellement
+    const kycSubmitted = localStorage.getItem(`kyc_submitted_${address}`);
+    const kycDismissed = localStorage.getItem(`kyc_dismissed_${address}`);
+    if (kycSubmitted === 'true' || kycDismissed === 'true') {
+      console.log('KYC déjà soumis ou fermé manuellement, pas de popup');
+      return;
+    }
+    
     console.log('Vérification API user pour', address);
     setLoading(true);
     fetch(`/api/user?walletAddress=${address}`)
@@ -32,7 +41,11 @@ export default function AccountGate() {
           const user = await res.json();
           console.log('Utilisateur trouvé:', user);
           setAccountType(user.accountType);
-          if (user.accountType === "club" && !user.kycValidated) {
+          
+          // Vérifier à nouveau localStorage avant de montrer la popup KYC
+          const kycSubmittedCheck = localStorage.getItem(`kyc_submitted_${address}`);
+          const kycDismissedCheck = localStorage.getItem(`kyc_dismissed_${address}`);
+          if (user.accountType === "club" && !user.kycValidated && kycSubmittedCheck !== 'true' && kycDismissedCheck !== 'true') {
             setKycNeeded(true);
           }
         } else if (res.status === 404) {
@@ -111,7 +124,13 @@ export default function AccountGate() {
           {/* Bouton de fermeture (croix) */}
           <button
             className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl font-bold focus:outline-none"
-            onClick={() => setKycNeeded(false)}
+            onClick={() => {
+              setKycNeeded(false);
+              // Marquer comme "fermé manuellement" pour éviter la réapparition
+              if (address) {
+                localStorage.setItem(`kyc_dismissed_${address}`, 'true');
+              }
+            }}
             aria-label="Fermer la pop-up"
           >
             ×
