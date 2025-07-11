@@ -107,7 +107,15 @@ export default function AccountGate() {
   if (kycNeeded && pathname !== "/kyc") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-gray-900 rounded-xl p-8 max-w-sm w-full border border-gray-700 shadow-lg text-center">
+        <div className="bg-gray-900 rounded-xl p-8 max-w-sm w-full border border-gray-700 shadow-lg text-center relative">
+          {/* Bouton de fermeture (croix) */}
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl font-bold focus:outline-none"
+            onClick={() => setKycNeeded(false)}
+            aria-label="Fermer la pop-up"
+          >
+            ×
+          </button>
           <h2 className="text-xl font-bold text-white mb-4">Vérification KYC requise</h2>
           <p className="text-gray-300 mb-4">Vous devez compléter le KYC pour accéder aux fonctionnalités club.</p>
           <button className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all" onClick={() => router.push("/kyc") }>

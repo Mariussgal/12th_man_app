@@ -52,7 +52,14 @@ const Sidemenu = () => {
       {/* Logo/Header */}
       <div className="p-6">
         <div className="flex items-center space-x-3">
-          <h1 className="text-xl font-bold text-white font-sans">12th Man</h1>
+          <button
+            onClick={() => router.push("/")}
+            className="focus:outline-none"
+            title="Retour au menu principal"
+            aria-label="Retour au menu principal"
+          >
+            <h1 className="text-xl font-bold text-white font-sans">12th Man</h1>
+          </button>
         </div>
       </div>
 
