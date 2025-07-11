@@ -69,12 +69,6 @@ export default function Home() {
         <button className="px-6 py-2 bg-white/20 text-white rounded-full text-sm font-medium backdrop-blur-sm border border-white/30">
           All
         </button>
-        <button className="px-6 py-2 text-gray-400 hover:text-white rounded-full text-sm font-medium hover:bg-white/10 transition-all">
-          Ligue 1
-        </button>
-        <button className="px-6 py-2 text-gray-400 hover:text-white rounded-full text-sm font-medium hover:bg-white/10 transition-all">
-          Ligue 2
-        </button>
       </div>
 
       {/* Flippable Campaign Cards */}
