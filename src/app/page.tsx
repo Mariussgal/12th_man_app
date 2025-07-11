@@ -75,9 +75,6 @@ export default function Home() {
         <button className="px-6 py-2 text-gray-400 hover:text-white rounded-full text-sm font-medium hover:bg-white/10 transition-all">
           Ligue 2
         </button>
-        <button className="px-6 py-2 text-gray-400 hover:text-white rounded-full text-sm font-medium hover:bg-white/10 transition-all">
-          High APY
-        </button>
       </div>
 
       {/* Flippable Campaign Cards */}
