@@ -22,10 +22,7 @@ const Sidemenu = () => {
       name: "Competitions",
       path: "/competitions",
     },
-    {
-      name: "Tactics",
-      path: "/tactics",
-    },
+
     {
       name: "Leaderboard",
       path: "/leaderboard",
