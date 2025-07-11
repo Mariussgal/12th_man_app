@@ -5,7 +5,7 @@ import Image from "next/image";
 import campaignsData from "../data/campaigns.json";
 import Link from "next/link";
 import { useReadContract } from 'wagmi';
-import { CONTRACTS, TWELFTH_MAN_ABI } from "../config/contracts";
+import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from "../config/contracts";
 
 export default function Home() {
   const campaigns = campaignsData;
@@ -42,28 +42,59 @@ export default function Home() {
       isLoading: boolean 
     }) => React.ReactNode 
   }) => {
-    const { data: campaignInfo, isLoading } = useReadContract({
+    const { data: campaignInfo, isLoading: isCampaignLoading } = useReadContract({
       address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
       abi: TWELFTH_MAN_ABI,
       functionName: 'getCampaignInfo',
       args: [BigInt(campaignId)],
     });
 
+    // Lecture des décimales du token PSG pour la conversion correcte
+    const { data: tokenDecimals } = useReadContract({
+      address: CONTRACTS.PSG_TOKEN as `0x${string}`,
+      abi: PSG_TOKEN_ABI,
+      functionName: 'decimals',
+    });
+
     // Debug logs
     console.log(`Campaign ${campaignId} - Raw data:`, campaignInfo);
+    console.log(`Token decimals:`, tokenDecimals);
 
     const contributorsCount = campaignInfo ? Number(campaignInfo[8] || BigInt(0)) : 0;
     
     // Récupérer le nom du club (index 1)
     const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
     
-    // Récupérer le montant objectif (index 2) - convertir de wei vers ether
-    const rawTargetAmount = campaignInfo ? campaignInfo[2] || BigInt(0) : BigInt(0);
-    const targetAmount = Number(rawTargetAmount) / Math.pow(10, 18);
+    // Fonction pour formater les montants PSG avec les bonnes décimales
+    const formatPSGAmount = (amount: bigint) => {
+      if (!amount) return 0;
+      
+      // Utiliser les décimales du token PSG (généralement 0 pour Chiliz)
+      const actualDecimals = tokenDecimals ?? 0;
+      
+      // Si c'est un très gros nombre, c'est probablement stocké en wei (18 décimales)
+      // sinon utiliser les décimales réelles du token
+      const decimalsToUse = amount > BigInt("1000000000000000000") ? 18 : actualDecimals;
+      const divisor = BigInt(10 ** decimalsToUse);
+      
+      const formatted = Number(amount) / Number(divisor);
+      console.log(`Formatage montant:`, { 
+        amount: amount.toString(), 
+        decimalsToUse, 
+        actualDecimals,
+        formatted 
+      });
+      
+      return formatted;
+    };
     
-    // Récupérer le montant collecté (index 3) - convertir de wei vers ether  
+    // Récupérer le montant objectif (index 2) - convertir avec les bonnes décimales
+    const rawTargetAmount = campaignInfo ? campaignInfo[2] || BigInt(0) : BigInt(0);
+    const targetAmount = formatPSGAmount(rawTargetAmount);
+    
+    // Récupérer le montant collecté (index 3) - convertir avec les bonnes décimales
     const rawCollectedAmount = campaignInfo ? campaignInfo[3] || BigInt(0) : BigInt(0);
-    const collectedAmount = Number(rawCollectedAmount) / Math.pow(10, 18);
+    const collectedAmount = formatPSGAmount(rawCollectedAmount);
     
     // Récupérer le taux d'intérêt annuel (index 4) - convertir depuis basis points 
     const rawAnnualInterestRate = campaignInfo ? campaignInfo[4] || BigInt(0) : BigInt(0);
@@ -72,13 +103,13 @@ export default function Home() {
     console.log(`Campaign ${campaignId} - Processed:`, {
       contributorsCount,
       clubName: smartContractClubName,
-      rawTargetAmount: rawTargetAmount.toString() + ' wei',
-      targetAmount: targetAmount + ' ether',
-      rawCollectedAmount: rawCollectedAmount.toString() + ' wei',
-      collectedAmount: collectedAmount + ' ether',
+      rawTargetAmount: rawTargetAmount.toString(),
+      targetAmount: targetAmount + ' PSG',
+      rawCollectedAmount: rawCollectedAmount.toString(),
+      collectedAmount: collectedAmount + ' PSG',
       rawAnnualInterestRate: rawAnnualInterestRate.toString() + ' basis points',
       annualInterestRate: annualInterestRate + '%',
-      isLoading
+      isLoading: isCampaignLoading
     });
     
     return <>{children({ 
@@ -87,7 +118,7 @@ export default function Home() {
       targetAmount,
       annualInterestRate,
       clubName: smartContractClubName,
-      isLoading 
+      isLoading: isCampaignLoading 
     })}</>;
   };
 
