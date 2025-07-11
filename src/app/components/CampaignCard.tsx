@@ -1,3 +1,6 @@
+import { useReadContract } from 'wagmi';
+import { CONTRACTS, TWELFTH_MAN_ABI } from "../../config/contracts";
+
 interface Campaign {
     id: number;
     clubName: string;
@@ -19,6 +22,55 @@ interface Campaign {
   }
   
   export default function CampaignCard({ campaign, onClick }: CampaignCardProps) {
+    // Hook pour récupérer les informations de la campagne depuis le smart contract
+    const { data: campaignInfo, isLoading } = useReadContract({
+      address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
+      abi: TWELFTH_MAN_ABI,
+      functionName: 'getCampaignInfo',
+      args: [BigInt(campaign.id)],
+    });
+
+    // Debug logs
+    console.log(`CampaignCard ${campaign.id} - Raw data:`, campaignInfo);
+
+    const contributorsCount = campaignInfo ? Number(campaignInfo[8] || BigInt(0)) : 0;
+    
+    // Récupérer le nom du club (index 1)
+    const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
+    
+    // Récupérer le montant objectif (index 2) - convertir de wei vers ether
+    const rawTargetAmount = campaignInfo ? campaignInfo[2] || BigInt(0) : BigInt(0);
+    const targetAmount = Number(rawTargetAmount) / Math.pow(10, 18);
+    
+    // Récupérer le montant collecté (index 3) - convertir de wei vers ether
+    const rawCollectedAmount = campaignInfo ? campaignInfo[3] || BigInt(0) : BigInt(0);
+    const collectedAmount = Number(rawCollectedAmount) / Math.pow(10, 18);
+    
+    // Récupérer le taux d'intérêt annuel (index 4) - convertir depuis basis points
+    const rawAnnualInterestRate = campaignInfo ? campaignInfo[4] || BigInt(0) : BigInt(0);
+    const annualInterestRate = Number(rawAnnualInterestRate) / 100;
+
+    // Logique de fallback améliorée
+    const hasSmartContractData = !isLoading && (smartContractClubName || contributorsCount > 0 || collectedAmount > 0);
+    const currentAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
+    const displayTargetAmount = hasSmartContractData ? targetAmount : campaign.targetAmount;
+    const displayClubName = hasSmartContractData && smartContractClubName ? smartContractClubName : campaign.clubName;
+    const displayContributors = hasSmartContractData ? contributorsCount : campaign.backers;
+    const displayInterestRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
+
+    console.log(`CampaignCard ${campaign.id} - Processed:`, {
+      hasSmartContractData,
+      rawTargetAmount: rawTargetAmount.toString() + ' wei',
+      displayTargetAmount: displayTargetAmount + ' ether',
+      rawCollectedAmount: rawCollectedAmount.toString() + ' wei', 
+      currentAmount: currentAmount + ' ether',
+      rawAnnualInterestRate: rawAnnualInterestRate.toString() + ' basis points',
+      displayInterestRate: displayInterestRate + '%',
+      displayClubName,
+      displayContributors,
+      isLoading
+    });
+
     const getProgressPercentage = (current: number, target: number) => {
       return Math.min((current / target) * 100, 100);
     };
@@ -51,14 +103,14 @@ interface Campaign {
                 {campaign.clubLogo}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">{campaign.clubName}</h3>
+                <h3 className="text-lg font-bold text-white">{displayClubName}</h3>
                 <p className="text-gray-400 text-xs">{campaign.league}</p>
               </div>
             </div>
             
             {/* APY Badge */}
             <div className="px-2.5 py-1 bg-green-500/15 border border-green-500/25 rounded-full">
-              <span className="text-green-400 font-bold text-xs">{campaign.interestRate}%</span>
+              <span className="text-green-400 font-bold text-xs">{displayInterestRate}%</span>
             </div>
           </div>
   
@@ -72,7 +124,7 @@ interface Campaign {
             <div className="flex justify-between items-center mb-2">
               <span className="text-gray-400 text-xs">Progress</span>
               <span className="text-white font-semibold text-xs">
-                {Math.round(getProgressPercentage(campaign.currentAmount, campaign.targetAmount))}%
+                {Math.round(getProgressPercentage(currentAmount, displayTargetAmount))}%
               </span>
             </div>
             
@@ -81,7 +133,7 @@ interface Campaign {
               <div
                 className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-1000 ease-out"
                 style={{
-                  width: `${getProgressPercentage(campaign.currentAmount, campaign.targetAmount)}%`
+                  width: `${getProgressPercentage(currentAmount, displayTargetAmount)}%`
                 }}
               />
             </div>
@@ -91,14 +143,14 @@ interface Campaign {
           <div className="flex justify-between items-end mb-5">
             <div>
               <div className="text-xl font-bold text-white mb-0.5">
-                {formatCurrency(campaign.currentAmount)}
+                {formatCurrency(currentAmount)}
               </div>
               <div className="text-gray-400 text-xs">
-                of {formatCurrency(campaign.targetAmount)}
+                of {formatCurrency(displayTargetAmount)}
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm font-semibold text-white">{campaign.backers}</div>
+              <div className="text-sm font-semibold text-white">{displayContributors}</div>
               <div className="text-gray-400 text-xs">investors</div>
             </div>
           </div>

@@ -119,13 +119,14 @@ export default function LendPage() {
 
   // Extraction des données du smart contract (avec contributorsCount ajouté)
   const campaignData = campaignInfo ? {
-    totalRaised: campaignInfo[3] || BigInt(0),  // collectedAmount (index 3)
-    targetAmount: campaignInfo[2] || BigInt(0), // targetAmount (index 2)
-    annualRate: campaignInfo[4] || BigInt(0),   // annualInterestRate (index 4)
-    deadline: campaignInfo[5] || BigInt(0),     // deadline (index 5)
-    isActive: campaignInfo[6] || false,         // isActive (index 6)
-    isCompleted: campaignInfo[7] || false,      // isCompleted (index 7)
-    contributorsCount: campaignInfo[8] || BigInt(0) // contributorsCount (index 8) ← NOUVEAU !
+    clubName: campaignInfo[1] || '',                 // clubName (index 1) ← NOUVEAU !
+    targetAmount: campaignInfo[2] || BigInt(0),      // targetAmount (index 2)
+    totalRaised: campaignInfo[3] || BigInt(0),       // collectedAmount (index 3)
+    annualRate: (Number(campaignInfo[4] || BigInt(0))) / 100,  // annualInterestRate (index 4) converti depuis basis points
+    deadline: campaignInfo[5] || BigInt(0),          // deadline (index 5)
+    isActive: campaignInfo[6] || false,              // isActive (index 6)
+    isCompleted: campaignInfo[7] || false,           // isCompleted (index 7)
+    contributorsCount: campaignInfo[8] || BigInt(0)  // contributorsCount (index 8)
   } : null;
 
   // Gérer les succès et erreurs
@@ -268,9 +269,13 @@ export default function LendPage() {
               {campaign.clubLogo}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{campaign.clubName}</h1>
+              <h1 className="text-2xl font-bold text-white">
+                {isCampaignLoading ? '...' : (campaignData && campaignData.clubName ? campaignData.clubName : campaign.clubName)}
+              </h1>
               <p className="text-gray-400">{campaign.league}</p>
-              <p className="text-green-400 font-semibold">{campaign.interestRate}% APY</p>
+              <p className="text-green-400 font-semibold">
+                {isCampaignLoading ? '...' : (campaignData ? `${campaignData.annualRate}%` : `${campaign.interestRate}%`)} APY
+              </p>
             </div>
           </div>
           
@@ -305,7 +310,9 @@ export default function LendPage() {
 
       {/* Formulaire de contribution */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6">
-        <h2 className="text-xl font-bold text-white mb-6">Prêter à {campaign.clubName}</h2>
+        <h2 className="text-xl font-bold text-white mb-6">
+          Prêter à {isCampaignLoading ? '...' : (campaignData && campaignData.clubName ? campaignData.clubName : campaign.clubName)}
+        </h2>
         
         {!isConnected ? (
           <div className="text-center">
@@ -376,7 +383,9 @@ export default function LendPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Taux d'intérêt annuel:</span>
-                  <span className="text-green-400 font-semibold">{campaign.interestRate}%</span>
+                  <span className="text-green-400 font-semibold">
+                    {isCampaignLoading ? '...' : (campaignData ? `${campaignData.annualRate}%` : `${campaign.interestRate}%`)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Durée:</span>
