@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import campaignsData from "../data/campaigns.json";
 import Link from "next/link";
+import { useReadContract } from 'wagmi';
+import { CONTRACTS, TWELFTH_MAN_ABI } from "../config/contracts";
 
 export default function Home() {
   const campaigns = campaignsData;
@@ -26,6 +28,67 @@ export default function Home() {
       currency: 'USD',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  // Hook pour récupérer les informations des campagnes depuis le smart contract
+  const CampaignInfo = ({ campaignId, children }: { 
+    campaignId: number, 
+    children: (data: { 
+      contributorsCount: number, 
+      collectedAmount: number,
+      targetAmount: number,
+      annualInterestRate: number,
+      clubName: string,
+      isLoading: boolean 
+    }) => React.ReactNode 
+  }) => {
+    const { data: campaignInfo, isLoading } = useReadContract({
+      address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
+      abi: TWELFTH_MAN_ABI,
+      functionName: 'getCampaignInfo',
+      args: [BigInt(campaignId)],
+    });
+
+    // Debug logs
+    console.log(`Campaign ${campaignId} - Raw data:`, campaignInfo);
+
+    const contributorsCount = campaignInfo ? Number(campaignInfo[8] || BigInt(0)) : 0;
+    
+    // Récupérer le nom du club (index 1)
+    const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
+    
+    // Récupérer le montant objectif (index 2) - convertir de wei vers ether
+    const rawTargetAmount = campaignInfo ? campaignInfo[2] || BigInt(0) : BigInt(0);
+    const targetAmount = Number(rawTargetAmount) / Math.pow(10, 18);
+    
+    // Récupérer le montant collecté (index 3) - convertir de wei vers ether  
+    const rawCollectedAmount = campaignInfo ? campaignInfo[3] || BigInt(0) : BigInt(0);
+    const collectedAmount = Number(rawCollectedAmount) / Math.pow(10, 18);
+    
+    // Récupérer le taux d'intérêt annuel (index 4) - convertir depuis basis points 
+    const rawAnnualInterestRate = campaignInfo ? campaignInfo[4] || BigInt(0) : BigInt(0);
+    const annualInterestRate = Number(rawAnnualInterestRate) / 100;
+    
+    console.log(`Campaign ${campaignId} - Processed:`, {
+      contributorsCount,
+      clubName: smartContractClubName,
+      rawTargetAmount: rawTargetAmount.toString() + ' wei',
+      targetAmount: targetAmount + ' ether',
+      rawCollectedAmount: rawCollectedAmount.toString() + ' wei',
+      collectedAmount: collectedAmount + ' ether',
+      rawAnnualInterestRate: rawAnnualInterestRate.toString() + ' basis points',
+      annualInterestRate: annualInterestRate + '%',
+      isLoading
+    });
+    
+    return <>{children({ 
+      contributorsCount, 
+      collectedAmount, 
+      targetAmount,
+      annualInterestRate,
+      clubName: smartContractClubName,
+      isLoading 
+    })}</>;
   };
 
   return (
@@ -104,13 +167,30 @@ export default function Home() {
                       <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center space-x-4">
                           <div>
-                            <h3 className="text-xl font-bold text-white">{campaign.clubName}</h3>
+                            <CampaignInfo campaignId={campaign.id}>
+                              {({ clubName, isLoading }) => (
+                                <h3 className="text-xl font-bold text-white">
+                                  {isLoading ? '...' : (clubName || campaign.clubName)}
+                                </h3>
+                              )}
+                            </CampaignInfo>
                             <p className="text-gray-400 text-sm">{campaign.league}</p>
                           </div>
                         </div>
-                        <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                          <span className="text-green-400 font-bold text-sm">{campaign.interestRate}%</span>
-                        </div>
+                        <CampaignInfo campaignId={campaign.id}>
+                          {({ annualInterestRate, clubName, contributorsCount, collectedAmount, isLoading }) => {
+                            const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                            const displayRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
+                            
+                            return (
+                              <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+                                <span className="text-green-400 font-bold text-sm">
+                                  {isLoading ? '...' : displayRate}%
+                                </span>
+                              </div>
+                            );
+                          }}
+                        </CampaignInfo>
                       </div>
 
                     {/* Large Club Logo - Centered */}
@@ -132,40 +212,65 @@ export default function Home() {
                     <div className="space-y-3">
 
                     {/* Amount & Stats */}
-                    <div className="flex justify-between items-end mb-8">
-                      <div>
-                        <div className="text-2xl font-bold text-white mb-1">
-                          {formatCurrency(campaign.currentAmount)}
-                        </div>
-                        <div className="text-gray-400 text-sm">
-                          of {formatCurrency(campaign.targetAmount)}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-semibold text-white">{campaign.backers}</div>
-                        <div className="text-gray-400 text-sm">investors</div>
-                      </div>
-                    </div>
+                    <CampaignInfo campaignId={campaign.id}>
+                      {({ contributorsCount, collectedAmount, targetAmount, clubName, isLoading }) => {
+                        // Utiliser les données du smart contract si disponibles, sinon fallback vers JSON
+                        const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                        const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
+                        const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
+                        
+                        return (
+                          <div className="flex justify-between items-end mb-8">
+                            <div>
+                              <div className="text-2xl font-bold text-white mb-1">
+                                {isLoading ? '...' : formatCurrency(displayAmount)}
+                              </div>
+                              <div className="text-gray-400 text-sm">
+                                of {formatCurrency(displayTarget)}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-white">
+                                {isLoading ? '...' : (hasSmartContractData ? contributorsCount : campaign.backers)}
+                              </div>
+                              <div className="text-gray-400 text-sm">investors</div>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    </CampaignInfo>
                     {/* Progress Section */}
-                    <div className="mb-6">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-gray-400 text-sm">Progress</span>
-                        <span className="text-white font-semibold text-sm">
-                          {Math.round(getProgressPercentage(campaign.currentAmount, campaign.targetAmount))}%
-                        </span>
-                      </div>
-                      
-                      <div className="relative">
-                        <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-1000 ease-out"
-                            style={{
-                              width: `${getProgressPercentage(campaign.currentAmount, campaign.targetAmount)}%`
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <CampaignInfo campaignId={campaign.id}>
+                      {({ collectedAmount, targetAmount, clubName, contributorsCount, isLoading }) => {
+                        // Utiliser les données du smart contract si disponibles, sinon fallback vers JSON
+                        const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                        const currentAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
+                        const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
+                        const progressPercentage = getProgressPercentage(currentAmount, displayTarget);
+                        
+                        return (
+                          <div className="mb-6">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-gray-400 text-sm">Progress</span>
+                              <span className="text-white font-semibold text-sm">
+                                {isLoading ? '...' : Math.round(progressPercentage)}%
+                              </span>
+                            </div>
+                            
+                            <div className="relative">
+                              <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-1000 ease-out"
+                                  style={{
+                                    width: `${isLoading ? 0 : progressPercentage}%`
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    </CampaignInfo>
 
                       <button 
                         onClick={() => toggleFlip(campaign.id)}
@@ -190,7 +295,13 @@ export default function Home() {
                     {/* Back Header */}
                     <div className="flex items-center justify-between mb-8">
                        <div>
-                         <h3 className="text-2xl font-bold text-white mb-1">{campaign.clubName}</h3>
+                         <CampaignInfo campaignId={campaign.id}>
+                           {({ clubName, isLoading }) => (
+                             <h3 className="text-2xl font-bold text-white mb-1">
+                               {isLoading ? '...' : (clubName || campaign.clubName)}
+                             </h3>
+                           )}
+                         </CampaignInfo>
                          <p className="text-gray-300">Detailed Information</p>
                        </div>
                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center  overflow-hidden">
@@ -207,10 +318,21 @@ export default function Home() {
                     {/* Detailed Stats */}
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                          <div className="text-2xl font-bold text-green-400">{campaign.interestRate}%</div>
-                          <div className="text-sm text-gray-300">Annual Yield</div>
-                        </div>
+                        <CampaignInfo campaignId={campaign.id}>
+                          {({ annualInterestRate, clubName, contributorsCount, collectedAmount, isLoading }) => {
+                            const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                            const displayRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
+                            
+                            return (
+                              <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                                <div className="text-2xl font-bold text-green-400">
+                                  {isLoading ? '...' : displayRate}%
+                                </div>
+                                <div className="text-sm text-gray-300">Annual Yield</div>
+                              </div>
+                            );
+                          }}
+                        </CampaignInfo>
                         <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                           <div className="text-2xl font-bold text-blue-400">{campaign.daysLeft}</div>
                           <div className="text-sm text-gray-300">Days Left</div>
@@ -222,11 +344,33 @@ export default function Home() {
                         <div className="space-y-2 text-sm text-gray-300">
                           <div className="flex justify-between">
                             <span>Target Amount:</span>
-                            <span className="text-white font-medium">{formatCurrency(campaign.targetAmount)}</span>
+                            <CampaignInfo campaignId={campaign.id}>
+                              {({ targetAmount, clubName, contributorsCount, collectedAmount, isLoading }) => {
+                                const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
+                                
+                                return (
+                                  <span className="text-white font-medium">
+                                    {isLoading ? '...' : formatCurrency(displayTarget)}
+                                  </span>
+                                );
+                              }}
+                            </CampaignInfo>
                           </div>
                           <div className="flex justify-between">
                             <span>Current Funding:</span>
-                            <span className="text-white font-medium">{formatCurrency(campaign.currentAmount)}</span>
+                            <CampaignInfo campaignId={campaign.id}>
+                              {({ collectedAmount, clubName, contributorsCount, isLoading }) => {
+                                const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
+                                
+                                return (
+                                  <span className="text-white font-medium">
+                                    {isLoading ? '...' : formatCurrency(displayAmount)}
+                                  </span>
+                                );
+                              }}
+                            </CampaignInfo>
                           </div>
                           <div className="flex justify-between">
                             <span>Duration:</span>
@@ -234,7 +378,18 @@ export default function Home() {
                           </div>
                           <div className="flex justify-between">
                             <span>Total Investors:</span>
-                            <span className="text-white font-medium">{campaign.backers}</span>
+                            <CampaignInfo campaignId={campaign.id}>
+                              {({ contributorsCount, clubName, collectedAmount, isLoading }) => {
+                                const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                const displayInvestors = hasSmartContractData ? contributorsCount : campaign.backers;
+                                
+                                return (
+                                  <span className="text-white font-medium">
+                                    {isLoading ? '...' : displayInvestors}
+                                  </span>
+                                );
+                              }}
+                            </CampaignInfo>
                           </div>
                         </div>
                       </div>
