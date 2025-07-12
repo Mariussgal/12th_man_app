@@ -133,35 +133,6 @@ The platform uses two main smart contracts on Chiliz Spicy Testnet:
 - **Allowance System**: Enable TwelfthMan contract spending
 - **Balance Tracking**: Monitor user token holdings
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm
-- MetaMask or compatible Web3 wallet
-- Chiliz Spicy Testnet setup
-- MongoDB instance (local or cloud)
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/12th_man_app.git
-
-# Navigate to project directory
-cd 12th_man_app
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
-
-# Run the development server
-npm run dev
-```
-
 ### Configuration
 
 #### Environment Variables
