@@ -129,9 +129,6 @@ The platform uses two main smart contracts on Chiliz Spicy Testnet:
 - **Access Control**: Manage permissions and KYC requirements
 
 #### PSG Token Contract (`0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3`)
-- **ERC-20 Standard**: Standard token implementation
-- **Allowance System**: Enable TwelfthMan contract spending
-- **Balance Tracking**: Monitor user token holdings
 
 ### Configuration
 
