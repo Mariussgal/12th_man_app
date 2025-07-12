@@ -138,7 +138,7 @@ The platform uses two main smart contracts on Chiliz Spicy Testnet:
 #### Environment Variables
 ```env
 # Database
-MONGODB_URI=mongodb://localhost:27017/12thman
+MONGODB_URI=mongodb+srv://..................
 
 # Chiliz Network
 NEXT_PUBLIC_CHILIZ_RPC_URL=https://spicy-rpc.chiliz.com
