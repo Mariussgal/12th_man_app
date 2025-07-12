@@ -130,33 +130,35 @@ export default function MyClubPage() {
       </div>
     );
   }
-  return (
-    <div className="max-w-xl mx-auto mt-10 bg-gray-900 p-8 rounded-xl border border-gray-700 shadow-lg">
-      <h1 className="text-2xl font-bold text-white mb-6 text-center">Créer une campagne</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-gray-300 mb-1">Nom du club *</label>
-          <input name="clubName" value={form.clubName} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
-        </div>
-        <div>
-          <label className="block text-gray-300 mb-1">Montant cible (PSG) *</label>
-          <input name="targetAmount" type="number" min="100" step="0.01" value={form.targetAmount} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
-        </div>
-        <div>
-          <label className="block text-gray-300 mb-1">Taux d'intérêt annuel (%) *</label>
-          <input name="annualInterestRate" type="number" min="0.01" max="100" step="0.01" value={form.annualInterestRate} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
-        </div>
-        <div>
-          <label className="block text-gray-300 mb-1">Durée (jours) *</label>
-          <input name="duration" type="number" min="7" max="365" value={form.duration} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
-        </div>
-        {error && <div className="bg-red-900/30 text-red-300 p-2 rounded text-center">{error}</div>}
-        {success && <div className="bg-green-900/30 text-green-300 p-2 rounded text-center">{success}</div>}
-        <button type="submit" disabled={isTxLoading} className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all">
-          {isTxLoading ? "Création en cours..." : "Créer la campagne"}
-        </button>
-      </form>
-      {isTxSuccess && <div className="mt-4 text-green-400 text-center">Campagne créée avec succès !</div>}
-    </div>
-  );
+  if (kycValidated) {
+    return (
+      <div className="max-w-xl mx-auto mt-10 bg-gray-900 p-8 rounded-xl border border-gray-700 shadow-lg">
+        <h1 className="text-2xl font-bold text-white mb-6 text-center">Créer une campagne</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-300 mb-1">Nom du club *</label>
+            <input name="clubName" value={form.clubName} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+          </div>
+          <div>
+            <label className="block text-gray-300 mb-1">Montant cible (PSG) *</label>
+            <input name="targetAmount" type="number" min="100" step="0.01" value={form.targetAmount} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+          </div>
+          <div>
+            <label className="block text-gray-300 mb-1">Taux d'intérêt annuel (%) *</label>
+            <input name="annualInterestRate" type="number" min="0.01" max="100" step="0.01" value={form.annualInterestRate} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+          </div>
+          <div>
+            <label className="block text-gray-300 mb-1">Durée (jours) *</label>
+            <input name="duration" type="number" min="7" max="365" value={form.duration} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+          </div>
+          {error && <div className="bg-red-900/30 text-red-300 p-2 rounded text-center">{error}</div>}
+          {success && <div className="bg-green-900/30 text-green-300 p-2 rounded text-center">{success}</div>}
+          <button type="submit" disabled={isTxLoading} className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all">
+            {isTxLoading ? "Création en cours..." : "Créer la campagne"}
+          </button>
+        </form>
+        {isTxSuccess && <div className="mt-4 text-green-400 text-center">Campagne créée avec succès !</div>}
+      </div>
+    );
+  }
 } 
