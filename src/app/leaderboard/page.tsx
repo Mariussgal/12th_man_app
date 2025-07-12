@@ -84,7 +84,7 @@ export default function LeaderboardPage() {
     const clubStats = getMockClubStats(selectedClub);
     
     return (
-      <div className="max-w-6xl mx-auto px-6 py-8 font-sans">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 font-sans">
         {/* Header avec retour */}
         <div className="mb-8">
           <button 
@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
           </button>
           
           <div className="flex items-center space-x-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden flex-shrink-0">
               <Image
                 src={selectedCampaign?.clubLogo || ""}
                 alt={`${selectedCampaign?.clubName} logo`}
@@ -104,49 +104,43 @@ export default function LeaderboardPage() {
                 className="object-contain"
               />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 <CampaignInfo campaignId={selectedClub}>
                   {({ clubName, isLoading }) => (
                     isLoading ? '...' : (clubName || selectedCampaign?.clubName)
                   )}
                 </CampaignInfo>
               </h1>
-              <p className="text-gray-400">Top Contributors Leaderboard</p>
+              <p className="text-gray-400 text-sm sm:text-base">Top Contributors Leaderboard</p>
             </div>
           </div>
         </div>
 
         {/* Stats rapides */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {selectedClub === 1 ? (
             // PSG - use PSG hook data
             <>
-              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                <div className="text-2xl font-bold text-white mb-1">
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-white mb-1">
                   {isPSGLoading ? '...' : psgStats.totalContributors}
                 </div>
-                <div className="text-gray-400 text-sm">Total Contributors</div>
+                <div className="text-gray-400 text-xs sm:text-sm">Total Contributors</div>
               </div>
               
-              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                <div className="text-2xl font-bold text-green-400 mb-1">
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-green-400 mb-1">
                   {isPSGLoading ? '...' : formatAmountUSD(psgStats.totalAmountUSD)}
                 </div>
-                <div className="text-gray-400 text-sm">Total Raised</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {isPSGLoading ? '...' : formatAmount(psgStats.totalAmount)} PSG
-                </div>
+                <div className="text-gray-400 text-xs sm:text-sm">Total Raised</div>
               </div>
               
-              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                <div className="text-2xl font-bold text-blue-400 mb-1">
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-blue-400 mb-1">
                   {isPSGLoading ? '...' : formatAmountUSD(psgStats.averageContributionUSD)}
                 </div>
-                <div className="text-gray-400 text-sm">Avg. Contribution</div>
-                <div className="text-xs text-gray-500 mt-1">
-                                        {isPSGLoading ? '...' : formatAmount(psgStats.averageContribution)} USDC
-                </div>
+                <div className="text-gray-400 text-xs sm:text-sm">Avg. Contribution</div>
               </div>
             </>
           ) : (
@@ -155,31 +149,26 @@ export default function LeaderboardPage() {
               const clubStats = getMockClubStats(selectedClub);
               return (
                 <>
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                    <div className="text-2xl font-bold text-white mb-1">
+                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center">
+                    <div className="text-xl sm:text-2xl font-bold text-white mb-1">
                       {clubStats.totalContributors}
                     </div>
-                    <div className="text-gray-400 text-sm">Total Contributors</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Total Contributors</div>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                    <div className="text-2xl font-bold text-green-400 mb-1">
+                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center">
+                    <div className="text-xl sm:text-2xl font-bold text-green-400 mb-1">
                       {formatAmountUSD(clubStats.totalAmountUSD)}
                     </div>
-                    <div className="text-gray-400 text-sm">Total Raised</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {formatAmount(clubStats.totalAmount)} USDC
-                    </div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Total Raised</div>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                    <div className="text-2xl font-bold text-blue-400 mb-1">
+                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-400 mb-1">
                       {formatAmountUSD(clubStats.averageContributionUSD)}
                     </div>
-                    <div className="text-gray-400 text-sm">Avg. Contribution</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {formatAmount(clubStats.averageContribution)} USDC
-                    </div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Avg. Contribution</div>
+                  
                   </div>
                 </>
               );

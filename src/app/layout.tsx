@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "12th Man",
     images: [
       {
-        url: "/banner.png", // Your banner image
+        url: "/banner.png", 
         width: 1200,
         height: 630,
         alt: "12th Man - Web3 Crowdfunding Platform",
