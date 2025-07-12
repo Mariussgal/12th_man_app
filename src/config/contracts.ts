@@ -26,6 +26,20 @@ export const CHILIZ_TESTNET = {
 export const TWELFTH_MAN_ABI = [
   {
     "inputs": [
+      { "internalType": "string", "name": "_clubName", "type": "string" },
+      { "internalType": "uint256", "name": "_targetAmount", "type": "uint256" },
+      { "internalType": "uint256", "name": "_annualInterestRate", "type": "uint256" },
+      { "internalType": "uint256", "name": "_duration", "type": "uint256" }
+    ],
+    "name": "createCampaign",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {"internalType": "uint256", "name": "_campaignId", "type": "uint256"},
       {"internalType": "uint256", "name": "_amount", "type": "uint256"}
     ],
