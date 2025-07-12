@@ -1,16 +1,122 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import campaignsData from "../data/campaigns.json";
 import Link from "next/link";
-import { useReadContract } from 'wagmi';
+import { useReadContract, usePublicClient } from 'wagmi';
+import { getEventSelector } from 'viem';
 import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from "../config/contracts";
 
 export default function Home() {
-  const campaigns = campaignsData;
+  const publicClient = usePublicClient();
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
   const [flippedCards, setFlippedCards] = useState<{[key: number]: boolean}>({});
   const [showDescription, setShowDescription] = useState<{[key: number]: boolean}>({});
+  const [campaignImages, setCampaignImages] = useState<{[key: number]: string}>({});
+
+  // Fetch all campaign IDs from CampaignCreated events, then fetch their info
+  useEffect(() => {
+    async function fetchCampaigns() {
+      setLoadingCampaigns(true);
+      try {
+        if (!publicClient) return;
+        const eventSelector = getEventSelector(
+          'CampaignCreated(uint256,address,string,uint256,uint256,uint256,uint256)'
+        );
+        const logs = await publicClient.getLogs({
+          address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
+          event: {
+            type: 'event',
+            name: 'CampaignCreated',
+            inputs: [
+              { indexed: true, name: 'campaignId', type: 'uint256' },
+              { indexed: true, name: 'clubOwner', type: 'address' },
+              { indexed: false, name: 'clubName', type: 'string' },
+              { indexed: false, name: 'targetAmount', type: 'uint256' },
+              { indexed: false, name: 'annualInterestRate', type: 'uint256' },
+              { indexed: false, name: 'duration', type: 'uint256' },
+              { indexed: false, name: 'deadline', type: 'uint256' },
+            ],
+          },
+          fromBlock: 'earliest',
+          toBlock: 'latest',
+        });
+        // Extract unique campaignIds
+        const campaignIds = Array.from(new Set(logs.map(log => Number(log.args.campaignId))));
+        // Fetch info for each campaign
+        const campaignInfos = await Promise.all(
+          campaignIds.map(async (id) => {
+            try {
+              // getCampaignInfo returns [clubOwner, clubName, targetAmount, collectedAmount, annualInterestRate, deadline, isActive, isCompleted, contributorsCount]
+              const info = await publicClient.readContract({
+                address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
+                abi: TWELFTH_MAN_ABI,
+                functionName: 'getCampaignInfo',
+                args: [BigInt(id)],
+              });
+              return {
+                id,
+                clubName: info[1],
+                targetAmount: info[2],
+                currentAmount: info[3],
+                interestRate: Number(info[4]) / 100,
+                duration: '', // Not in getCampaignInfo, can be added if needed
+                endDate: '', // Not in getCampaignInfo, can be added if needed
+                description: '', // Not in getCampaignInfo, can be added if needed
+                clubLogo: '', // Will be filled by image fetch
+                backers: Number(info[8]),
+                daysLeft: 0, // Can be calculated if needed
+                league: '', // Not in getCampaignInfo, can be added if needed
+              };
+            } catch (e) {
+              return null;
+            }
+          })
+        );
+        setCampaigns(campaignInfos.filter(Boolean));
+      } catch (e) {
+        setCampaigns([]);
+      } finally {
+        setLoadingCampaigns(false);
+      }
+    }
+    fetchCampaigns();
+  }, [publicClient]);
+
+  useEffect(() => {
+    async function fetchImages() {
+      console.log('fetchImages called with campaigns:', campaigns);
+      
+      const images: {[key: number]: string} = {};
+      await Promise.all(
+        campaigns.map(async (campaign) => {
+          try {
+            console.log(`Fetching image for campaign ${campaign.id}`);
+            const res = await fetch(`/api/campaign-image?campaignId=${campaign.id}`);
+            console.log(`Response for campaign ${campaign.id}:`, res.status);
+            
+            if (res.ok) {
+              const data = await res.json();
+              console.log(`Image data for campaign ${campaign.id}:`, data);
+              if (data.imageUrl) {
+                images[campaign.id] = data.imageUrl;
+              }
+            } else {
+              console.log(`No image found for campaign ${campaign.id}`);
+            }
+          } catch (e) {
+            console.error(`Error fetching image for campaign ${campaign.id}:`, e);
+          }
+        })
+      );
+      
+      console.log('Final images mapping:', images);
+      setCampaignImages(images);
+    }
+    if (campaigns.length > 0) fetchImages();
+  }, [campaigns]);
 
   const toggleFlip = (campaignId: number) => {
     setFlippedCards(prev => ({
@@ -26,8 +132,11 @@ export default function Home() {
     }));
   };
 
-  const getProgressPercentage = (current: number, target: number) => {
-    return Math.min((current / target) * 100, 100);
+  const getProgressPercentage = (current: number | bigint, target: number | bigint) => {
+    const nCurrent = typeof current === 'bigint' ? Number(current) : current;
+    const nTarget = typeof target === 'bigint' ? Number(target) : target;
+    if (!nTarget || nTarget === 0) return 0;
+    return Math.min((nCurrent / nTarget) * 100, 100);
   };
 
   const formatCurrency = (amount: number) => {
@@ -169,6 +278,9 @@ export default function Home() {
 
 
       {/* Flippable Campaign Cards */}
+      {loadingCampaigns ? (
+        <div className="text-center text-white py-20 text-xl">Chargement des campagnes...</div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-30">
         {campaigns.map((campaign) => (
           <div
@@ -221,13 +333,15 @@ export default function Home() {
                     {/* Large Club Logo - Centered */}
                     <div className="flex justify-center -mb-5">
                       <div className="w-80 h-80 rounded-3xl flex items-center justify-center  overflow-hidden">
-                        <Image
-                          src={campaign.clubLogo}
-                          alt={`${campaign.clubName} logo`}
-                          width={300}
-                          height={200}
-                          className="object-contain"
-                        />
+                        {(campaignImages[campaign.id] || campaign.clubLogo) ? (
+                          <Image
+                            src={campaignImages[campaign.id] || campaign.clubLogo}
+                            alt={`${campaign.clubName} logo`}
+                            width={300}
+                            height={200}
+                            className="object-contain"
+                          />
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -350,15 +464,17 @@ export default function Home() {
                            </CampaignInfo>
                          </div>
                          <div className="w-16 h-16 rounded-2xl flex items-center justify-center  overflow-hidden">
-                           <Image
-                             src={campaign.clubLogo}
-                             alt={`${campaign.clubName} logo`}
-                             width={56}
-                             height={56}
-                             className="object-contain"
-                           />
-                         </div>
-                       </div>
+                           {(campaignImages[campaign.id] || campaign.clubLogo) ? (
+                             <Image
+                               src={campaignImages[campaign.id] || campaign.clubLogo}
+                               alt={`${campaign.clubName} logo`}
+                               width={56}
+                               height={56}
+                               className="object-contain"
+                             />
+                           ) : null}
+                          </div>
+                        </div>
 
                       {/* Detailed Stats */}
                       <div className="space-y-6">
@@ -472,6 +588,7 @@ export default function Home() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }
