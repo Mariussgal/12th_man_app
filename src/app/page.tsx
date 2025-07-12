@@ -301,7 +301,7 @@ export default function Home() {
                         onClick={() => toggleFlip(campaign.id)}
                         className="w-full py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors"
                       >
-                        REVERT CARD →
+                        REVERT CARD 
                       </button>
                     </div>
                   </div>
@@ -457,9 +457,9 @@ export default function Home() {
                       
                       <button 
                         onClick={() => toggleFlip(campaign.id)}
-                        className="w-full py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                        className="w-full py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors mt-2"
                       >
-                        ← Back to Overview
+                        BACK TO OVERVIEW
                       </button>
                     </div>
                   </div>
