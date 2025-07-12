@@ -1,10 +1,8 @@
 // Configuration des contrats pour TwelfthMan
 export const CONTRACTS = {
-  // ⚠️ REMPLACEZ CETTE ADRESSE PAR VOTRE CONTRAT DÉPLOYÉ SUR CHILIZ TESTNET
   TWELFTH_MAN: "0x90D3d31175b47801ea55d010629B25726aE0AD53", // Votre adresse de contrat TwelfthMan déployé
   
   // Adresses des tokens sur Chiliz Spicy Testnet (88882)
-  // ⚠️ VÉRIFIEZ CES ADRESSES - elles peuvent être différentes sur Spicy Testnet
   PSG_TOKEN: "0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3", // À vérifier
   WCHZ_TOKEN: "0x678c34581db0a7808d0aC669d7025f1408C9a3C6", // À vérifier
 };
@@ -22,7 +20,7 @@ export const CHILIZ_TESTNET = {
   },
 };
 
-// ABI complet pour les fonctions principales
+// ABI complet avec toutes les nouvelles fonctions du smart contract
 export const TWELFTH_MAN_ABI = [
   {
     "inputs": [
@@ -137,6 +135,128 @@ export const TWELFTH_MAN_ABI = [
     "outputs": [{"internalType": "string", "name": "", "type": "string"}],
     "stateMutability": "view",
     "type": "function"
+  },
+  // ===== NOUVELLES FONCTIONS AJOUTÉES =====
+  {
+    "inputs": [{"internalType": "uint256", "name": "_campaignId", "type": "uint256"}],
+    "name": "getContributors",
+    "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "_campaignId", "type": "uint256"}],
+    "name": "getContributorsWithAmounts",
+    "outputs": [
+      {"internalType": "address[]", "name": "contributors", "type": "address[]"},
+      {"internalType": "uint256[]", "name": "amounts", "type": "uint256[]"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "uint256", "name": "_campaignId", "type": "uint256"},
+      {"internalType": "uint256", "name": "_topN", "type": "uint256"}
+    ],
+    "name": "getTopContributors",
+    "outputs": [
+      {"internalType": "address[]", "name": "contributors", "type": "address[]"},
+      {"internalType": "uint256[]", "name": "amounts", "type": "uint256[]"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "_clubOwner", "type": "address"}],
+    "name": "getClubCampaigns",
+    "outputs": [{"internalType": "uint256[]", "name": "", "type": "uint256[]"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "percent", "type": "uint256"}],
+    "name": "percentToBasisPoints",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "_campaignId", "type": "uint256"}],
+    "name": "withdrawFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  // ===== ÉVÉNEMENTS =====
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"},
+      {"indexed": true, "internalType": "address", "name": "clubOwner", "type": "address"},
+      {"indexed": false, "internalType": "string", "name": "clubName", "type": "string"},
+      {"indexed": false, "internalType": "uint256", "name": "targetAmount", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "annualInterestRate", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "duration", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "deadline", "type": "uint256"}
+    ],
+    "name": "CampaignCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"},
+      {"indexed": true, "internalType": "address", "name": "contributor", "type": "address"},
+      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "ContributionMade",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"}
+    ],
+    "name": "CampaignCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"}
+    ],
+    "name": "CampaignFailed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "FundsWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"},
+      {"indexed": true, "internalType": "address", "name": "contributor", "type": "address"},
+      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "RefundClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "uint256", "name": "campaignId", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "principalAmount", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "interestAmount", "type": "uint256"}
+    ],
+    "name": "LoanRepaid",
+    "type": "event"
   }
 ] as const;
 
@@ -197,4 +317,4 @@ export const PSG_TOKEN_ABI = [
     "stateMutability": "view",
     "type": "function"
   }
-] as const; 
+] as const;
