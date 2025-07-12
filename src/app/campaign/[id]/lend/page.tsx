@@ -95,8 +95,8 @@ export default function LendPage() {
     query: { enabled: !!campaignId }
   });
 
-  // Campaign data from JSON (for display)
-  const campaign = campaignsData.find((c: any) => c.id === parseInt(campaignId));
+  // Campaign data from JSON (pour les campagnes simulées) avec fallback blockchain
+  const jsonCampaign = campaignsData.find((c: any) => c.id === parseInt(campaignId));
 
   const isLoading = isContributePending || isApprovePending || isContributeConfirming || isApproveConfirming;
 
@@ -139,6 +139,22 @@ export default function LendPage() {
   })() : 0;
 
   const loanDurationInDays = campaignData ? Math.floor(Number(campaignData.loanDuration) / (24 * 60 * 60)) : 0;
+
+  // Créer un objet campaign combiné (JSON + blockchain)
+  const campaign = jsonCampaign || (campaignData ? {
+    id: parseInt(campaignId),
+    clubName: campaignData.clubName,
+    league: 'Blockchain League',
+    targetAmount: Number(campaignData.targetAmount) / Math.pow(10, 18),
+    currentAmount: Number(campaignData.totalRaised) / Math.pow(10, 18),
+    interestRate: campaignData.annualRate,
+    duration: `${loanDurationInDays} jours`,
+    endDate: new Date(Number(campaignData.deadline) * 1000).toISOString().split('T')[0],
+    description: `Campagne créée par ${campaignData.clubName}`,
+    clubLogo: '/logo/PSG.png',
+    backers: Number(campaignData.contributorsCount),
+    daysLeft: daysLeft
+  } : null);
 
   // Handle success and errors
   useEffect(() => {

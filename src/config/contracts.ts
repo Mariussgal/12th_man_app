@@ -1,6 +1,6 @@
 // Configuration des contrats pour TwelfthMan
 export const CONTRACTS = {
-  TWELFTH_MAN: "0x6c88fe779c1F66908107E87D13700fD1B31657E5", // Votre adresse de contrat TwelfthMan déployé
+  TWELFTH_MAN: "0xf4847f0d4a16a1FD9c29aAbaf9d41B43cAC75721", // Votre adresse de contrat TwelfthMan déployé
   
   // Adresses des tokens sur Chiliz Spicy Testnet (88882)
   USDC_TOKEN: "0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3", // Token USDC pour les prêts

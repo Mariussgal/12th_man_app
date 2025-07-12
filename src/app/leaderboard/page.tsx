@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
     hasData: hasPSGData 
   } = usePSGLeaderboard();
 
-  // Hook to fetch campaign information from smart contract
+  // Hook pour récupérer les informations des campagnes (utilise JSON comme source principale)
   const CampaignInfo = ({ campaignId, children }: { 
     campaignId: number, 
     children: (data: { 
@@ -42,23 +42,49 @@ export default function LeaderboardPage() {
       isLoading: boolean 
     }) => React.ReactNode 
   }) => {
+    // Trouver la campagne correspondante dans nos données JSON
+    const campaignData = campaigns.find(c => c.id === campaignId);
+    
+    // Essayer de récupérer les données blockchain comme complément (désactivé pour la démo)
     const { data: campaignInfo, isLoading } = useReadContract({
       address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
       abi: TWELFTH_MAN_ABI,
       functionName: 'getCampaignInfo',
       args: [BigInt(campaignId)],
+      query: { enabled: false } // Désactivé pour la démo
     });
 
-    const contributorsCount = campaignInfo ? Number(campaignInfo[8] || BigInt(0)) : 0;
-    const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
-    const rawCollectedAmount = campaignInfo ? campaignInfo[3] || BigInt(0) : BigInt(0);
-    const collectedAmount = Number(rawCollectedAmount) / Math.pow(10, 18);
+    // Utiliser les données JSON comme source principale
+    if (campaignData) {
+      return <>{children({ 
+        contributorsCount: campaignData.backers,
+        collectedAmount: campaignData.currentAmount,
+        clubName: campaignData.clubName,
+        isLoading: false
+      })}</>;
+    }
     
+    // Fallback vers les données blockchain si pas de données JSON
+    if (campaignInfo) {
+      const contributorsCount = Number(campaignInfo[8] || BigInt(0));
+      const smartContractClubName = campaignInfo[1] || '';
+      const rawCollectedAmount = campaignInfo[3] || BigInt(0);
+      const collectedAmount = Number(rawCollectedAmount) / Math.pow(10, 18);
+      
+      return <>{children({ 
+        contributorsCount,
+        collectedAmount,
+        clubName: smartContractClubName,
+        isLoading
+      })}</>;
+    }
+    
+    // Données par défaut
     return <>{children({ 
-      contributorsCount, 
-      collectedAmount,
-      clubName: smartContractClubName,
-      isLoading 
+      contributorsCount: 0,
+      collectedAmount: 0,
+      clubName: '',
+      isLoading: false
     })}</>;
   };
 
@@ -70,10 +96,10 @@ export default function LeaderboardPage() {
     setSelectedClub(campaignId);
     
     if (campaignId === 1) {
-      // PSG - use smart contract data
+      // PSG réelle (smart contract) - use real smart contract data
       setLeaderboardData(psgLeaderboard);
     } else {
-              // Other clubs - generate mock data
+      // Autres clubs (simulés ou blockchain) - generate mock data
       const mockLeaderboard = generateMockLeaderboard(campaignId);
       setLeaderboardData(mockLeaderboard);
     }
@@ -317,9 +343,9 @@ export default function LeaderboardPage() {
               {/* Stats */}
               <CampaignInfo campaignId={campaign.id}>
                 {({ contributorsCount, collectedAmount, clubName, isLoading }) => {
-                  // PSG (id: 1) uses PSG hook data, others use mock data
+                  // PSG réelle (id: 1) uses PSG hook data, others use mock data
                   if (campaign.id === 1) {
-                                          // PSG - specialized hook data
+                                          // PSG réelle - specialized hook data
                     return (
                       <div className="space-y-4">
                         <div className="flex justify-between">

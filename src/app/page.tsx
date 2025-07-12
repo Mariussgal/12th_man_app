@@ -17,72 +17,103 @@ export default function Home() {
   const [campaignImages, setCampaignImages] = useState<{[key: number]: string}>({});
   const [campaignDescriptions, setCampaignDescriptions] = useState<{[key: number]: string}>({});
 
-  // Fetch all campaign IDs from CampaignCreated events, then fetch their info
+  // Version hybride : utilise les données JSON comme base et ajoute les nouvelles campagnes blockchain
   useEffect(() => {
     async function fetchCampaigns() {
       setLoadingCampaigns(true);
       try {
-        if (!publicClient) return;
-        const eventSelector = getEventSelector(
-          'CampaignCreated(uint256,address,string,uint256,uint256,uint256,uint256)'
-        );
-        const logs = await publicClient.getLogs({
-          address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
-          event: {
-            type: 'event',
-            name: 'CampaignCreated',
-            inputs: [
-              { indexed: true, name: 'campaignId', type: 'uint256' },
-              { indexed: true, name: 'clubOwner', type: 'address' },
-              { indexed: false, name: 'clubName', type: 'string' },
-              { indexed: false, name: 'targetAmount', type: 'uint256' },
-              { indexed: false, name: 'annualInterestRate', type: 'uint256' },
-              { indexed: false, name: 'duration', type: 'uint256' },
-              { indexed: false, name: 'deadline', type: 'uint256' },
-            ],
-          },
-          fromBlock: 'earliest',
-          toBlock: 'latest',
-        });
-        // Extract unique campaignIds
-        const campaignIds = Array.from(new Set(logs.map(log => Number(log.args.campaignId))));
-        // Fetch info for each campaign
-        const campaignInfos = await Promise.all(
-          campaignIds.map(async (id) => {
-            try {
-              // getCampaignInfo returns [clubOwner, clubName, targetAmount, collectedAmount, annualInterestRate, deadline, isActive, isCompleted, contributorsCount]
-              const info = await publicClient.readContract({
-                address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
-                abi: TWELFTH_MAN_ABI,
-                functionName: 'getCampaignInfo',
-                args: [BigInt(id)],
-              });
-              return {
-                id,
-                clubName: info[1],
-                targetAmount: info[2],
-                currentAmount: info[3],
-                interestRate: Number(info[4]) / 100,
-                duration: '', // Not in getCampaignInfo, can be added if needed
-                endDate: '', // Not in getCampaignInfo, can be added if needed
-                description: '', // Not in getCampaignInfo, can be added if needed
-                clubLogo: '', // Will be filled by image fetch
-                backers: Number(info[8]),
-                daysLeft: 0, // Can be calculated if needed
-                league: '', // Not in getCampaignInfo, can be added if needed
-              };
-            } catch (e) {
-              return null;
+        // Commencer avec les données JSON simulées
+        let allCampaigns = [...campaignsData];
+        
+        // Récupérer les IDs des campagnes JSON existantes
+        const existingIds = new Set(campaignsData.map(c => c.id));
+        
+        // Essayer de récupérer les nouvelles campagnes depuis la blockchain
+        if (publicClient) {
+          try {
+            const eventSelector = getEventSelector(
+              'CampaignCreated(uint256,address,string,uint256,uint256,uint256,uint256)'
+            );
+            const logs = await publicClient.getLogs({
+              address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
+              event: {
+                type: 'event',
+                name: 'CampaignCreated',
+                inputs: [
+                  { indexed: true, name: 'campaignId', type: 'uint256' },
+                  { indexed: true, name: 'clubOwner', type: 'address' },
+                  { indexed: false, name: 'clubName', type: 'string' },
+                  { indexed: false, name: 'targetAmount', type: 'uint256' },
+                  { indexed: false, name: 'annualInterestRate', type: 'uint256' },
+                  { indexed: false, name: 'duration', type: 'uint256' },
+                  { indexed: false, name: 'deadline', type: 'uint256' },
+                ],
+              },
+              fromBlock: 'earliest',
+              toBlock: 'latest',
+            });
+            
+            // Identifier les nouvelles campagnes (non présentes dans le JSON)
+            const newCampaignIds = Array.from(new Set(logs.map(log => Number(log.args.campaignId))))
+              .filter(id => !existingIds.has(id));
+            
+            // Récupérer les informations des nouvelles campagnes
+            const newCampaigns = await Promise.all(
+              newCampaignIds.map(async (id) => {
+                try {
+                  const info = await publicClient.readContract({
+                    address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
+                    abi: TWELFTH_MAN_ABI,
+                    functionName: 'getCampaignInfo',
+                    args: [BigInt(id)],
+                  });
+                  
+                  // Convertir les données blockchain au format JSON
+                  const deadline = Number(info[5] || BigInt(0));
+                  const currentTime = Math.floor(Date.now() / 1000);
+                  const daysLeft = deadline > currentTime ? Math.ceil((deadline - currentTime) / (24 * 60 * 60)) : 0;
+                  
+                  return {
+                    id,
+                    clubName: info[1] || 'Nouveau Club',
+                    league: 'Ligue 1',
+                    targetAmount: Number(info[2] || BigInt(0)) / Math.pow(10, 18), // Convertir depuis wei
+                    currentAmount: Number(info[3] || BigInt(0)) / Math.pow(10, 18),
+                    interestRate: Number(info[4] || BigInt(0)) / 100,
+                    duration: `${Math.floor(Number(info[6] || BigInt(0)) / (24 * 60 * 60))} jours`,
+                    endDate: deadline ? new Date(deadline * 1000).toISOString().split('T')[0] : '2025-12-31',
+                    description: `Campagne créée par ${info[1] || 'Club inconnu'} - Nouvelle opportunité d'investissement`,
+                                         clubLogo: '/logo/PSG.png', // Logo par défaut
+                     backers: Number(info[10] || BigInt(0)),
+                     daysLeft: daysLeft
+                  };
+                } catch (e) {
+                  console.error(`Erreur lors de la récupération de la campagne ${id}:`, e);
+                  return null;
+                }
+              })
+            );
+            
+                                     // Ajouter les nouvelles campagnes à la fin de la liste (après les campagnes simulées)
+            const validNewCampaigns = newCampaigns.filter((campaign): campaign is NonNullable<typeof campaign> => campaign !== null);
+            if (validNewCampaigns.length > 0) {
+              allCampaigns = [...allCampaigns, ...validNewCampaigns];
             }
-          })
-        );
-        setCampaigns(campaignInfos.filter(Boolean));
+          } catch (blockchainError) {
+            console.log('Impossible de récupérer les campagnes blockchain, utilisation des données JSON uniquement');
+          }
+        }
+        
+        setCampaigns(allCampaigns);
       } catch (e) {
-        setCampaigns([]);
+        console.error('Erreur lors du chargement des campagnes:', e);
+        // En cas d'erreur, utiliser uniquement les données JSON
+        setCampaigns(campaignsData);
       } finally {
         setLoadingCampaigns(false);
       }
     }
+    
     fetchCampaigns();
   }, [publicClient]);
 
@@ -92,8 +123,12 @@ export default function Home() {
       
       const images: {[key: number]: string} = {};
       const descriptions: {[key: number]: string} = {};
+      
+      // Récupérer les images uniquement pour les nouvelles campagnes blockchain (pas pour les campagnes simulées)
+      const campaignsToFetch = campaigns.filter(campaign => campaign.id < 1000); // Les campagnes simulées ont les IDs 1000+
+      
       await Promise.all(
-        campaigns.map(async (campaign) => {
+        campaignsToFetch.map(async (campaign) => {
           try {
             console.log(`Fetching data for campaign ${campaign.id}`);
             const res = await fetch(`/api/campaign-image?campaignId=${campaign.id}`);
@@ -154,7 +189,7 @@ export default function Home() {
     }).format(amount);
   };
 
-  // Hook pour récupérer les informations des campagnes depuis le smart contract
+  // Hook pour récupérer les informations des campagnes (utilise JSON comme source principale)
   const CampaignInfo = ({ campaignId, children }: { 
     campaignId: number, 
     children: (data: { 
@@ -169,108 +204,84 @@ export default function Home() {
       isLoading: boolean 
     }) => React.ReactNode 
   }) => {
+    // Trouver la campagne correspondante dans nos données
+    const campaignData = campaigns.find(c => c.id === campaignId);
+    
+    // Essayer de récupérer les données blockchain comme complément (sans bloquer l'affichage)
     const { data: campaignInfo, isLoading: isCampaignLoading } = useReadContract({
       address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
       abi: TWELFTH_MAN_ABI,
       functionName: 'getCampaignInfo',
       args: [BigInt(campaignId)],
+      query: { enabled: false } // Désactivé pour la démo
     });
 
-    // Lecture des décimales du token USDC pour la conversion correcte
-    const { data: tokenDecimals } = useReadContract({
-      address: CONTRACTS.USDC_TOKEN as `0x${string}`,
-      abi: ERC20_ABI,
-      functionName: 'decimals',
-    });
-
-    // Debug logs
-    console.log(`Campaign ${campaignId} - Raw data:`, campaignInfo);
-    console.log(`Token decimals:`, tokenDecimals);
-
-    const contributorsCount = campaignInfo ? Number(campaignInfo[10] || BigInt(0)) : 0;
-    
-    // Récupérer le nom du club (index 1)
-    const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
-    
-    // Fonction pour formater les montants PSG avec les bonnes décimales
-    const formatPSGAmount = (amount: bigint) => {
-      if (!amount) return 0;
+    // Utiliser les données JSON comme source principale
+    if (campaignData) {
+      const endDate = new Date(campaignData.endDate);
+      const deadline = Math.floor(endDate.getTime() / 1000);
       
-      // Utiliser les décimales du token PSG (généralement 0 pour Chiliz)
-      const actualDecimals = tokenDecimals ?? 0;
+      return <>{children({ 
+        contributorsCount: campaignData.backers,
+        collectedAmount: campaignData.currentAmount,
+        targetAmount: campaignData.targetAmount,
+        annualInterestRate: campaignData.interestRate,
+        clubName: campaignData.clubName,
+        deadline: deadline,
+        loanDuration: parseInt(campaignData.duration.split(' ')[0]) || 90, // Extraire le nombre de jours
+        daysLeft: campaignData.daysLeft,
+        isLoading: false
+      })}</>;
+    }
+    
+    // Fallback vers les données blockchain si pas de données JSON
+    if (campaignInfo) {
+      const contributorsCount = Number(campaignInfo[10] || BigInt(0));
+      const smartContractClubName = campaignInfo[1] || '';
+      const targetAmount = Number(campaignInfo[2] || BigInt(0)) / Math.pow(10, 18);
+      const collectedAmount = Number(campaignInfo[3] || BigInt(0)) / Math.pow(10, 18);
+      const annualInterestRate = Number(campaignInfo[4] || BigInt(0)) / 100;
+      const deadline = Number(campaignInfo[5] || BigInt(0));
+      const loanDuration = Math.floor(Number(campaignInfo[6] || BigInt(0)) / (24 * 60 * 60));
+      const currentTime = Math.floor(Date.now() / 1000);
+      const daysLeft = deadline > currentTime ? Math.ceil((deadline - currentTime) / (24 * 60 * 60)) : 0;
       
-      // Si c'est un très gros nombre, c'est probablement stocké en wei (18 décimales)
-      // sinon utiliser les décimales réelles du token
-      const decimalsToUse = amount > BigInt("1000000000000000000") ? 18 : actualDecimals;
-      const divisor = BigInt(10 ** decimalsToUse);
-      
-      const formatted = Number(amount) / Number(divisor);
-      console.log(`Formatage montant:`, { 
-        amount: amount.toString(), 
-        decimalsToUse, 
-        actualDecimals,
-        formatted 
-      });
-      
-      return formatted;
-    };
+      return <>{children({ 
+        contributorsCount,
+        collectedAmount,
+        targetAmount,
+        annualInterestRate,
+        clubName: smartContractClubName,
+        deadline,
+        loanDuration,
+        daysLeft,
+        isLoading: isCampaignLoading
+      })}</>;
+    }
     
-    // Récupérer le montant objectif (index 2) - convertir avec les bonnes décimales
-    const rawTargetAmount = campaignInfo ? campaignInfo[2] || BigInt(0) : BigInt(0);
-    const targetAmount = formatPSGAmount(rawTargetAmount);
-    
-    // Récupérer le montant collecté (index 3) - convertir avec les bonnes décimales
-    const rawCollectedAmount = campaignInfo ? campaignInfo[3] || BigInt(0) : BigInt(0);
-    const collectedAmount = formatPSGAmount(rawCollectedAmount);
-    
-    // Récupérer le taux d'intérêt annuel (index 4) - convertir depuis basis points 
-    const rawAnnualInterestRate = campaignInfo ? campaignInfo[4] || BigInt(0) : BigInt(0);
-    const annualInterestRate = Number(rawAnnualInterestRate) / 100;
-    
-    // Récupérer la deadline (index 5) et calculer les jours restants
-    const rawDeadline = campaignInfo ? campaignInfo[5] || BigInt(0) : BigInt(0);
-    const deadline = Number(rawDeadline);
-    const currentTime = Math.floor(Date.now() / 1000);
-    const daysLeft = deadline > currentTime ? Math.ceil((deadline - currentTime) / (24 * 60 * 60)) : 0;
-    
-    // Récupérer la durée du prêt (index 6) - convertir en jours
-    const rawLoanDuration = campaignInfo ? campaignInfo[6] || BigInt(0) : BigInt(0);
-    const loanDuration = Math.floor(Number(rawLoanDuration) / (24 * 60 * 60));
-    
-    console.log(`Campaign ${campaignId} - Processed:`, {
-      contributorsCount,
-      clubName: smartContractClubName,
-      rawTargetAmount: rawTargetAmount.toString(),
-      targetAmount: targetAmount + ' USDC',
-      rawCollectedAmount: rawCollectedAmount.toString(),
-      collectedAmount: collectedAmount + ' USDC',
-      rawAnnualInterestRate: rawAnnualInterestRate.toString() + ' basis points',
-      annualInterestRate: annualInterestRate + '%',
-      deadline: deadline + ' (' + new Date(deadline * 1000).toLocaleDateString('fr-FR') + ')',
-      loanDuration: loanDuration + ' jours',
-      daysLeft: daysLeft + ' jours restants',
-      isLoading: isCampaignLoading
-    });
-    
+    // Données par défaut en cas d'échec
     return <>{children({ 
-      contributorsCount, 
-      collectedAmount, 
-      targetAmount,
-      annualInterestRate,
-      clubName: smartContractClubName,
-      deadline,
-      loanDuration,
-      daysLeft,
-      isLoading: isCampaignLoading 
+      contributorsCount: 0,
+      collectedAmount: 0,
+      targetAmount: 0,
+      annualInterestRate: 0,
+      clubName: '',
+      deadline: 0,
+      loanDuration: 0,
+      daysLeft: 0,
+      isLoading: isCampaignLoading
     })}</>;
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 font-sans">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 font-sans">
       {/* Hero Section */}
-      <div className="text-center mb-16">
-        <div className="rounded-2xl p-4 sm:p-8 mx-auto max-w-4xl">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+      <div className="text-center mb-10">
+        <div className="rounded-2xl p-2 sm:p-4 mx-auto max-w-4xl  padding-bottom: 0px;" > 
+
+
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
             <span className="text-white drop-shadow-2xl" style={{textShadow: '0 4px 8px rgba(0, 0, 0, 0.8)'}}>
               Fund your club,
             </span>
@@ -280,23 +291,23 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Lend to your favorite football club and receive guaranteed interest in $CHZ
+            Lend to your favorite football club and receive interest in $CHZ
           </p>
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-2xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 max-w-2xl mx-auto">
         <div className="text-center">
-          <div className="text-3xl font-bold text-white mb-1">€287K</div>
+          <div className="text-3xl font-bold text-white mb-1">$127K</div>
           <div className="text-sm text-gray-400">Total Funded</div>
         </div>
         <div className="text-center">
-          <div className="text-3xl font-bold text-green-400 mb-1">42%</div>
+          <div className="text-3xl font-bold text-white mb-1">12%</div>
           <div className="text-sm text-gray-400">Avg. APY</div>
         </div>
         <div className="text-center">
-          <div className="text-3xl font-bold text-blue-400 mb-1">1,247</div>
+          <div className="text-3xl font-bold text-white mb-1">1,247</div>
           <div className="text-sm text-gray-400">Investors</div>
         </div>
       </div>
@@ -307,7 +318,7 @@ export default function Home() {
       {loadingCampaigns ? (
         <div className="text-center text-white py-20 text-xl">Chargement des campagnes...</div>
       ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-30">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {campaigns.map((campaign) => (
           <div
             key={campaign.id}
