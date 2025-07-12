@@ -13,6 +13,7 @@ const Sidemenu = () => {
   const pathname = usePathname();
   const [accountType, setAccountType] = useState<string | null>(null);
   const [kycValidated, setKycValidated] = useState<boolean>(false);
+  const [shouldReloadHome, setShouldReloadHome] = useState(false);
 
   useEffect(() => {
     if (!isConnected || !address) return;
@@ -30,6 +31,13 @@ const Sidemenu = () => {
   const { data: balance } = useBalance({
     address: address,
   });
+
+  useEffect(() => {
+    if (shouldReloadHome && pathname === "/") {
+      setShouldReloadHome(false);
+      window.location.reload();
+    }
+  }, [shouldReloadHome, pathname]);
 
   const menuItems = [
     {
@@ -67,7 +75,14 @@ const Sidemenu = () => {
       <div className="p-6">
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => {
+              if (pathname === "/") {
+                window.location.reload();
+              } else {
+                setShouldReloadHome(true);
+                router.push("/");
+              }
+            }}
             className="focus:outline-none cursor-big"
             title="Retour au menu principal"
             aria-label="Retour au menu principal"
