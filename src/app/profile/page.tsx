@@ -339,9 +339,6 @@ export default function ProfilePage() {
                             <h3 className="text-lg font-bold text-white">
                               {campaignInfo ? String(campaignInfo[1]) : campaignData?.clubName || `Campagne #${id}`}
                             </h3>
-                                                         <p className="text-gray-400 text-sm">
-                               {campaignData?.league || 'Unknown League'}
-                             </p>
                           </div>
                         </div>
                         {getStatusBadge(status)}
