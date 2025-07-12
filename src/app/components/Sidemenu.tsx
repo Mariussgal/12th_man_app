@@ -136,15 +136,9 @@ const Sidemenu = () => {
             onClick={() => disconnect()}
             title="Cliquer pour se déconnecter"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold font-sans">✓</span>
-            </div>
             <div className="flex-1">
               <div className="text-white font-medium text-sm font-sans">{formatAddress(address)}</div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gray-600 rounded-sm flex items-center justify-center">
-                  <span className="text-xs font-sans">◆</span>
-                </div>
                 <span className="text-gray-400 text-sm font-sans">
                   {balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.00'}
                 </span>
