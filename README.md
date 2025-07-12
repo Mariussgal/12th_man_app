@@ -113,7 +113,7 @@ sequenceDiagram
 **Chiliz Spicy Testnet**
 ```
 TwelfthMan Contract (`0x90D3d31175b47801ea55d010629B25726aE0AD53`)
-USDC Token Contract (`0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3`)
+USDC Token Contract (`0xa37936f56249965d407e39347528a1a91eb1cbef`)
 ```
 
 
