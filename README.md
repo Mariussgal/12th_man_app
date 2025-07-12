@@ -33,36 +33,10 @@ It works like a **decentralized investment platform** where fans become the **12
 
 ```mermaid
 graph TB
-    subgraph "Frontend Layer"
-        A[Next.js Application]
-        B[React Components]
-        C[Tailwind CSS]
-    end
-    
-    subgraph "Web3 Layer"
-        D[Wagmi Hooks]
-        E[RainbowKit Wallet]
-        F[Chiliz Network]
-    end
-    
-    subgraph "Backend Layer"
-        G[Next.js API Routes]
-        H[MongoDB Database]
-        I[KYC System]
-    end
-    
-    subgraph "Blockchain Layer"
-        J[TwelfthMan Smart Contract]
-        K[PSG Token Contract]
-        L[Campaign Management]
-    end
-    
-    A --> D
-    D --> F
-    G --> H
-    J --> K
-    F --> J
-    A --> G
+    A[Web App] --> B[Web3 Layer]
+    B --> C[Chiliz Blockchain]
+    A --> D[Database]
+    C --> E[Smart Contracts]
 ```
 
 ### Campaign Creation & Management
@@ -71,15 +45,13 @@ graph TB
 sequenceDiagram
     participant Club
     participant SmartContract
-    participant Database
     participant Blockchain
     
-    Club->>SmartContract: createCampaign(clubName, targetAmount, interestRate, duration)
-    SmartContract->>Blockchain: Deploy campaign with parameters
-    SmartContract->>Database: Store campaign metadata
-    Blockchain-->>Club: Campaign ID & contract address
+    Club->>SmartContract: createCampaign(targetAmount, interestRate)
+    SmartContract->>Blockchain: Deploy campaign
+    Blockchain-->>Club: Campaign ID
     
-    Note over Club,Blockchain: Campaign is now live and accepting contributions
+    Note over Club,Blockchain: Campaign is now live
 ```
 
 **Campaign Parameters:**
