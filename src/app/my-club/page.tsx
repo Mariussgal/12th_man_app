@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient, useReadContract } from "wagmi";
-import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from "../../config/contracts";
+import { CONTRACTS, TWELFTH_MAN_ABI, ERC20_ABI } from "../../config/contracts";
 import { parseAbiItem, getEventSelector, decodeEventLog } from 'viem';
 import Image from 'next/image';
 
@@ -21,6 +21,8 @@ export default function MyClubPage() {
     targetAmount: "",
     annualInterestRate: "",
     duration: "",
+    deadline: "",
+    description: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -45,19 +47,19 @@ export default function MyClubPage() {
       .finally(() => setLoading(false));
   }, [isConnected, address]);
 
-  // Get PSG balance
+  // Get USDC balance
   const { data: psgBalance = BigInt(0) } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: [address as `0x${string}`],
     query: { enabled: !!address }
   });
 
-  // Get PSG token decimals
+  // Get USDC token decimals
   const { data: tokenDecimals } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'decimals',
     query: { enabled: !!address }
   });
@@ -123,9 +125,9 @@ export default function MyClubPage() {
                 currentAmount: info[3],
                 interestRate: Number(info[4]) / 100,
                 deadline: info[5],
-                isActive: info[6],
-                isCompleted: info[7],
-                contributorsCount: Number(info[8]),
+                isActive: info[8],
+                isCompleted: info[9],
+                contributorsCount: Number(info[10]),
               };
             } catch (e) {
               return null;
@@ -151,24 +153,26 @@ export default function MyClubPage() {
   useEffect(() => {
     if (txData) {
       setTxHash(txData);
-      setSuccess("Transaction envoyée !");
+      setSuccess("Transaction sent!");
     }
   }, [txData]);
 
   useEffect(() => {
     if (txError) {
-      setError(txError.message || "Erreur lors de la transaction");
+      setError(txError.message || "Transaction error");
     }
   }, [txError]);
 
   useEffect(() => {
     if (isTxSuccess) {
-      setSuccess("Campagne créée avec succès !");
+      setSuccess("Campaign created successfully!");
       setForm({
         clubName: "",
         targetAmount: "",
         annualInterestRate: "",
         duration: "",
+        deadline: "",
+        description: "",
       });
       setImagePreview(null);
       setImageFile(null);
@@ -230,11 +234,11 @@ export default function MyClubPage() {
             console.log('Extracted campaign ID:', campaignId);
             
             // Enregistrer dans MongoDB
-            console.log('Saving to MongoDB:', { campaignId, imageUrl });
+            console.log('Saving to MongoDB:', { campaignId, imageUrl, description: form.description });
             const response = await fetch('/api/campaign-image', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ campaignId, imageUrl }),
+              body: JSON.stringify({ campaignId, imageUrl, description: form.description }),
             });
             
             const result = await response.json();
@@ -243,7 +247,7 @@ export default function MyClubPage() {
             console.log('No CampaignCreated event found in logs');
           }
         } catch (e) {
-          console.error('Erreur lors de l\'enregistrement de l\'image de campagne :', e);
+          console.error('Error saving campaign image:', e);
         }
       }
     };
@@ -251,7 +255,7 @@ export default function MyClubPage() {
   }, [isTxSuccess, txHash, imageUrl, publicClient]);
 
   // Gestion du formulaire
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -273,7 +277,7 @@ export default function MyClubPage() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("Erreur lors de l'upload de l'image");
+    if (!res.ok) throw new Error("Error uploading image");
     const data = await res.json();
     return data.secure_url as string;
   };
@@ -289,22 +293,23 @@ export default function MyClubPage() {
         setImageUrl(uploadedImageUrl);
       }
     } catch (err) {
-      setError("Erreur lors de l'upload de l'image. Veuillez réessayer.");
+      setError("Error uploading image. Please try again.");
       return;
     }
-    if (!form.clubName || !form.targetAmount || !form.annualInterestRate || !form.duration) {
-      setError("Tous les champs sont obligatoires");
+    if (!form.clubName || !form.targetAmount || !form.annualInterestRate || !form.duration || !form.deadline || !form.description) {
+      setError("All fields are required");
       return;
     }
     // Conversion des valeurs pour le smart contract
     const targetAmount = BigInt(Math.floor(Number(form.targetAmount) * 1e18));
     const annualInterestRate = BigInt(Math.floor(Number(form.annualInterestRate) * 100)); // en basis points
-    const duration = BigInt(Number(form.duration) * 24 * 3600); // jours -> secondes
+    const deadline = BigInt(Math.floor(new Date(form.deadline + 'T23:59:59').getTime() / 1000)); // deadline à 23h59 du jour sélectionné
+    const loanDuration = BigInt(Number(form.duration) * 24 * 3600); // jours -> secondes
     writeContract({
       address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
       abi: TWELFTH_MAN_ABI,
       functionName: "createCampaign",
-      args: [form.clubName, targetAmount, annualInterestRate, duration] as [string, bigint, bigint, bigint],
+      args: [form.clubName, targetAmount, annualInterestRate, deadline, loanDuration] as [string, bigint, bigint, bigint, bigint],
     });
   };
 
@@ -322,12 +327,22 @@ export default function MyClubPage() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
-  const formatCurrency = (amount: bigint) => {
-    const formatted = Number(amount) / 1e18;
+  const formatCurrency = (amount: bigint, isCollectedAmount = false) => {
+    let formatted: number;
+    
+    if (isCollectedAmount && amount < BigInt(1000000)) {
+      // Temporary fix: if collectedAmount is very small, treat it as USDC units
+      formatted = Number(amount);
+    } else {
+      // Normal case: treat as wei (18 decimals)
+      const divisor = BigInt(10 ** 18);
+      formatted = Number(amount) / Number(divisor);
+    }
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 2
     }).format(formatted);
   };
 
@@ -345,7 +360,7 @@ export default function MyClubPage() {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8 font-sans text-center">
         <h1 className="text-3xl font-bold text-white mb-4">My Club</h1>
-        <p className="text-gray-400">Connectez-vous pour accéder à cette page.</p>
+        <p className="text-gray-400">Connect your wallet to access this page.</p>
       </div>
     );
   }
@@ -355,7 +370,7 @@ export default function MyClubPage() {
       <div className="max-w-4xl mx-auto px-6 py-8 font-sans text-center">
         <h1 className="text-3xl font-bold text-white mb-4">My Club</h1>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto"></div>
-        <p className="text-gray-400 mt-4">Chargement...</p>
+        <p className="text-gray-400 mt-4">Loading...</p>
       </div>
     );
   }
@@ -364,7 +379,7 @@ export default function MyClubPage() {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8 font-sans text-center">
         <h1 className="text-3xl font-bold text-white mb-4">My Club</h1>
-        <p className="text-gray-400">Accès réservé aux clubs.</p>
+        <p className="text-gray-400">Access restricted to clubs only.</p>
       </div>
     );
   }
@@ -386,19 +401,19 @@ export default function MyClubPage() {
 
         {/* KYC Status */}
         <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Statut KYC</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">KYC Status</h2>
           <p className="text-gray-300 mb-2">
-            Votre KYC est :
+            Your KYC is:
             <span className={`font-bold ml-2 ${statutAffiche === "En attente" ? "text-yellow-400" : "text-red-400"}`}>
-              {statutAffiche}
+              {statutAffiche === "En attente" ? "Pending" : statutAffiche === "Non soumis" ? "Not submitted" : statutAffiche}
             </span>
           </p>
-          <p className="text-gray-400 mb-6">Vous ne pouvez créer une campagne qu'une fois votre KYC validé.</p>
+          <p className="text-gray-400 mb-6">You can only create a campaign once your KYC is validated.</p>
           <button
             className="px-6 py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg"
             onClick={() => window.location.href = "/kyc"}
           >
-            Faire la demande de KYC
+            Submit KYC Request
           </button>
         </div>
       </div>
@@ -410,7 +425,7 @@ export default function MyClubPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">My Club</h1>
-        <p className="text-gray-400">Gérez vos campagnes et créez de nouvelles opportunités</p>
+        <p className="text-gray-400">Manage your campaigns and create new opportunities</p>
       </div>
 
       {/* Messages d'erreur et de succès */}
@@ -428,14 +443,14 @@ export default function MyClubPage() {
 
       {/* Account Information */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6 mb-8">
-        <h2 className="text-xl font-bold text-white mb-4">Informations du compte</h2>
+        <h2 className="text-xl font-bold text-white mb-4">Account Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className="text-gray-400 text-sm">Adresse du wallet</p>
+            <p className="text-gray-400 text-sm">Wallet Address</p>
             <p className="text-white font-mono">{formatAddress(address || '')}</p>
           </div>
           <div>
-            <p className="text-gray-400 text-sm">Solde USDC</p>
+            <p className="text-gray-400 text-sm">USDC Balance</p>
             <p className="text-white font-medium">{formatPSGBalance(psgBalance, tokenDecimals)} USDC</p>
           </div>
         </div>
@@ -443,17 +458,17 @@ export default function MyClubPage() {
 
       {/* My Campaigns */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6 mb-8">
-        <h2 className="text-xl font-bold text-white mb-6">Mes campagnes</h2>
+        <h2 className="text-xl font-bold text-white mb-6">My Campaigns</h2>
         
         {loadingCampaigns ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto"></div>
-            <p className="text-gray-400 mt-4">Chargement de vos campagnes...</p>
+            <p className="text-gray-400 mt-4">Loading your campaigns...</p>
           </div>
         ) : clubCampaigns.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-400 mb-4">Vous n'avez pas encore créé de campagne</p>
-            <p className="text-sm text-gray-500">Utilisez le formulaire ci-dessous pour créer votre première campagne</p>
+            <p className="text-gray-400 mb-4">You haven't created any campaigns yet</p>
+            <p className="text-sm text-gray-500">Use the form below to create your first campaign</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -469,28 +484,28 @@ export default function MyClubPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <p className="text-gray-400 text-sm">Objectif</p>
+                    <p className="text-gray-400 text-sm">Target</p>
                     <p className="text-white font-bold text-lg">{formatCurrency(campaign.targetAmount)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm">Collecté</p>
-                    <p className="text-white font-medium">{formatCurrency(campaign.currentAmount)}</p>
+                    <p className="text-gray-400 text-sm">Collected</p>
+                    <p className="text-white font-medium">{formatCurrency(campaign.currentAmount, true)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm">Contributeurs</p>
+                    <p className="text-gray-400 text-sm">Contributors</p>
                     <p className="text-white font-medium">{campaign.contributorsCount}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-gray-400 text-sm">Taux d'intérêt</p>
-                    <p className="text-white font-medium">{campaign.interestRate}% par an</p>
+                    <p className="text-gray-400 text-sm">Interest Rate</p>
+                    <p className="text-white font-medium">{campaign.interestRate}% per year</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm">Échéance</p>
+                    <p className="text-gray-400 text-sm">Deadline</p>
                     <p className="text-white font-medium">
-                      {new Date(Number(campaign.deadline) * 1000).toLocaleDateString('fr-FR')}
+                      {new Date(Number(campaign.deadline) * 1000).toLocaleDateString('en-US')}
                     </p>
                   </div>
                 </div>
@@ -498,7 +513,7 @@ export default function MyClubPage() {
                 {/* Progress bar */}
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-400 text-sm">Progression</span>
+                    <span className="text-gray-400 text-sm">Progress</span>
                     <span className="text-white font-semibold text-sm">
                       {Math.round((Number(campaign.currentAmount) / Number(campaign.targetAmount)) * 100)}%
                     </span>
@@ -520,23 +535,23 @@ export default function MyClubPage() {
 
       {/* Campaign Creation Form */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6">
-        <h2 className="text-xl font-bold text-white mb-6">Créer une nouvelle campagne</h2>
+        <h2 className="text-xl font-bold text-white mb-6">Create New Campaign</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-300 mb-2 font-medium">Nom du club *</label>
+              <label className="block text-gray-300 mb-2 font-medium">Club Name *</label>
               <input 
                 name="clubName" 
                 value={form.clubName} 
                 onChange={handleChange} 
                 required 
                 className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-red-500 focus:outline-none transition-colors" 
-                placeholder="Nom de votre club"
+                placeholder="Your club name"
               />
             </div>
             <div>
-              <label className="block text-gray-300 mb-2 font-medium">Montant cible (USDC) *</label>
+              <label className="block text-gray-300 mb-2 font-medium">Target Amount (USDC) *</label>
               <input 
                 name="targetAmount" 
                 type="number" 
@@ -553,7 +568,7 @@ export default function MyClubPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-300 mb-2 font-medium">Taux d'intérêt annuel (%) *</label>
+              <label className="block text-gray-300 mb-2 font-medium">Annual Interest Rate (%) *</label>
               <input 
                 name="annualInterestRate" 
                 type="number" 
@@ -568,7 +583,7 @@ export default function MyClubPage() {
               />
             </div>
             <div>
-              <label className="block text-gray-300 mb-2 font-medium">Durée (jours) *</label>
+              <label className="block text-gray-300 mb-2 font-medium">Duration (days) *</label>
               <input 
                 name="duration" 
                 type="number" 
@@ -584,7 +599,36 @@ export default function MyClubPage() {
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2 font-medium">Image de la campagne</label>
+            <label className="block text-gray-300 mb-2 font-medium">Campaign Deadline *</label>
+            <input 
+              name="deadline" 
+              type="date" 
+              value={form.deadline} 
+              onChange={handleChange} 
+              required 
+              min={new Date().toISOString().slice(0, 10)}
+              className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-red-500 focus:outline-none transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:brightness-75 [&::-webkit-calendar-picker-indicator]:hover:brightness-100"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Select the date when the funding campaign should end
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 mb-2 font-medium">Project Description *</label>
+            <textarea 
+              name="description" 
+              value={form.description} 
+              onChange={handleChange} 
+              required 
+              rows={4}
+              className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-red-500 focus:outline-none transition-colors resize-vertical" 
+              placeholder="Describe your project, how funds will be used, club objectives..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 mb-2 font-medium">Campaign Image</label>
             <input 
               type="file" 
               accept="image/*" 
@@ -593,7 +637,7 @@ export default function MyClubPage() {
             />
             {imagePreview && (
               <div className="mt-4 flex justify-center">
-                <img src={imagePreview} alt="Aperçu" className="max-h-48 rounded-lg border border-gray-700" />
+                <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg border border-gray-700" />
               </div>
             )}
           </div>
@@ -603,30 +647,30 @@ export default function MyClubPage() {
             disabled={isTxLoading} 
             className="w-full py-4 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed transition-all shadow-lg text-lg"
           >
-            {isTxLoading ? "Création en cours..." : "Créer la campagne"}
+            {isTxLoading ? "Creating Campaign..." : "Create Campaign"}
           </button>
         </form>
       </div>
 
       {/* Instructions */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6 mt-6">
-        <h3 className="text-lg font-bold text-white mb-4">Comment ça marche</h3>
+        <h3 className="text-lg font-bold text-white mb-4">How it works</h3>
         <div className="space-y-3 text-sm text-gray-300">
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
-            <p>Créez votre campagne de financement avec un objectif, un taux d'intérêt et une durée</p>
+            <p>Create your funding campaign with a target, interest rate and duration</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
-            <p>Les fans investissent en USDC pour soutenir votre club</p>
+            <p>Fans invest USDC to support your club</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
-            <p>Si l'objectif est atteint, vous recevez les fonds. Sinon, les investisseurs sont remboursés</p>
+            <p>If the target is reached, you receive the funds. Otherwise, investors are refunded</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">4</div>
-            <p>À la fin de la période, vous remboursez le capital + intérêts en CHZ</p>
+            <p>At the end of the period, you repay the principal + interest in CHZ</p>
           </div>
         </div>
       </div>

@@ -4,13 +4,19 @@ import CampaignImage from '@/models/CampaignImage';
 
 export async function POST(req: NextRequest) {
   await dbConnect();
-  const { campaignId, imageUrl } = await req.json();
-  if (!campaignId || !imageUrl) {
-    return NextResponse.json({ error: 'campaignId and imageUrl are required' }, { status: 400 });
+  const { campaignId, imageUrl, description } = await req.json();
+  if (!campaignId) {
+    return NextResponse.json({ error: 'campaignId is required' }, { status: 400 });
   }
+
+  // Préparer les données à mettre à jour
+  const updateData: any = {};
+  if (imageUrl) updateData.imageUrl = imageUrl;
+  if (description) updateData.description = description;
+
   const doc = await CampaignImage.findOneAndUpdate(
     { campaignId },
-    { imageUrl },
+    updateData,
     { upsert: true, new: true }
   );
   return NextResponse.json(doc);
@@ -28,4 +34,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
   return NextResponse.json(doc);
-} 
+}

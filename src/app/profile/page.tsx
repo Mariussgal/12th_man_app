@@ -5,7 +5,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem';
 import Image from 'next/image';
 import campaignsData from '../../data/campaigns.json';
-import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from '../../config/contracts';
+import { CONTRACTS, TWELFTH_MAN_ABI, ERC20_ABI } from '../../config/contracts';
 
 interface CampaignInvestment {
   campaignId: number;
@@ -45,19 +45,19 @@ export default function ProfilePage() {
     query: { enabled: !!address && isConnected }
   });
 
-  // Get PSG balance
+  // Get USDC balance
   const { data: psgBalance = '0' } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: [address as `0x${string}`],
     query: { enabled: !!address }
   });
 
-  // Get PSG token decimals
+  // Get USDC token decimals
   const { data: tokenDecimals } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'decimals',
     query: { enabled: !!address }
   });

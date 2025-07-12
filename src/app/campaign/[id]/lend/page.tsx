@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import campaignsData from '../../../../data/campaigns.json';
-import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from '../../../../config/contracts';
+import { CONTRACTS, TWELFTH_MAN_ABI, ERC20_ABI } from '../../../../config/contracts';
 
 export default function LendPage() {
   const params = useParams();
@@ -44,19 +44,19 @@ export default function LendPage() {
     hash: approveHash,
   });
 
-  // Read PSG balance
+  // Read USDC balance
   const { data: psgBalance = '0', error: balanceError, isLoading: isBalanceLoading } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: [address as `0x${string}`],
     query: { enabled: !!address }
   });
 
-  // Read PSG allowance
+  // Read USDC allowance
   const { data: allowance = '0', error: allowanceError, isLoading: isAllowanceLoading } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'allowance',
     args: [address as `0x${string}`, CONTRACTS.TWELFTH_MAN as `0x${string}`],
     query: { enabled: !!address }
@@ -64,10 +64,10 @@ export default function LendPage() {
 
 
 
-  // Read PSG token decimals for verification
+  // Read USDC token decimals for verification
   const { data: tokenDecimals } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: ERC20_ABI,
     functionName: 'decimals',
     query: { enabled: !!address }
   });
@@ -117,17 +117,28 @@ export default function LendPage() {
     });
   }
 
-  // Extract smart contract data (with contributorsCount added)
+  // Extract smart contract data (with correct indices)
   const campaignData = campaignInfo ? {
-    clubName: campaignInfo[1] || '',                 // clubName (index 1) ← NEW!
+    clubName: campaignInfo[1] || '',                 // clubName (index 1)
     targetAmount: campaignInfo[2] || BigInt(0),      // targetAmount (index 2)
     totalRaised: campaignInfo[3] || BigInt(0),       // collectedAmount (index 3)
     annualRate: (Number(campaignInfo[4] || BigInt(0))) / 100,  // annualInterestRate (index 4) converted from basis points
     deadline: campaignInfo[5] || BigInt(0),          // deadline (index 5)
-    isActive: campaignInfo[6] || false,              // isActive (index 6)
-    isCompleted: campaignInfo[7] || false,           // isCompleted (index 7)
-    contributorsCount: campaignInfo[8] || BigInt(0)  // contributorsCount (index 8)
+    loanDuration: campaignInfo[6] || BigInt(0),      // loanDuration (index 6)
+    loanStartTime: campaignInfo[7] || BigInt(0),     // loanStartTime (index 7)
+    isActive: campaignInfo[8] || false,              // isActive (index 8)
+    isCompleted: campaignInfo[9] || false,           // isCompleted (index 9)
+    contributorsCount: campaignInfo[10] || BigInt(0) // contributorsCount (index 10)
   } : null;
+
+  // Calculate days left and duration in days
+  const daysLeft = campaignData ? (() => {
+    const deadline = Number(campaignData.deadline);
+    const currentTime = Math.floor(Date.now() / 1000);
+    return deadline > currentTime ? Math.ceil((deadline - currentTime) / (24 * 60 * 60)) : 0;
+  })() : 0;
+
+  const loanDurationInDays = campaignData ? Math.floor(Number(campaignData.loanDuration) / (24 * 60 * 60)) : 0;
 
   // Handle success and errors
   useEffect(() => {
@@ -200,8 +211,8 @@ export default function LendPage() {
         setSuccess('Step 1/2: Token approval in progress...');
         
         approve({
-          address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-          abi: PSG_TOKEN_ABI,
+          address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+          abi: ERC20_ABI,
           functionName: 'approve',
           args: [CONTRACTS.TWELFTH_MAN as `0x${string}`, amountInTokenUnits],
         });
@@ -305,7 +316,9 @@ export default function LendPage() {
               <div className="text-gray-400 text-sm">Investors</div>
             </div>
             <div>
-              <div className="text-white font-bold text-lg">{campaign.daysLeft}</div>
+              <div className="text-white font-bold text-lg">
+                {isCampaignLoading ? '...' : (campaignData ? daysLeft : campaign.daysLeft)}
+              </div>
               <div className="text-gray-400 text-sm">Days remaining</div>
             </div>
           </div>
@@ -393,7 +406,9 @@ export default function LendPage() {
                 </div>
                 <div className="flex justify-between">
                                       <span className="text-gray-400">Duration:</span>
-                  <span className="text-white">{campaign.duration}</span>
+                  <span className="text-white">
+                    {isCampaignLoading ? '...' : (campaignData ? `${loanDurationInDays} jours` : campaign.duration)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                                       <span className="text-gray-400">Loan token:</span>
@@ -433,14 +448,14 @@ export default function LendPage() {
               {amount && parseFloat(amount) > parseFloat(formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)) && (
                 <div className="bg-red-900/20 border border-red-500/30 rounded p-2">
                   <p className="text-red-400">
-                    ❌ Solde insuffisant. Vous avez {formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)} USDC disponibles.
+                    ❌ Insufficient balance. You have {formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)} USDC available.
                   </p>
                 </div>
               )}
               
               <p className="text-center">
                 By clicking "Lend Now", you agree to transfer {amount || '...'} USDC 
-                to the smart contract for campaign #{campaignId}
+                to the smart contract for campaign {campaign.clubName}
               </p>
             </div>
           </div>
@@ -467,4 +482,4 @@ export default function LendPage() {
       </div>
     </div>
   );
-} 
+}

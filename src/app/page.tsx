@@ -6,7 +6,7 @@ import campaignsData from "../data/campaigns.json";
 import Link from "next/link";
 import { useReadContract, usePublicClient } from 'wagmi';
 import { getEventSelector } from 'viem';
-import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from "../config/contracts";
+import { CONTRACTS, TWELFTH_MAN_ABI, ERC20_ABI } from "../config/contracts";
 
 export default function Home() {
   const publicClient = usePublicClient();
@@ -15,6 +15,7 @@ export default function Home() {
   const [flippedCards, setFlippedCards] = useState<{[key: number]: boolean}>({});
   const [showDescription, setShowDescription] = useState<{[key: number]: boolean}>({});
   const [campaignImages, setCampaignImages] = useState<{[key: number]: string}>({});
+  const [campaignDescriptions, setCampaignDescriptions] = useState<{[key: number]: string}>({});
 
   // Fetch all campaign IDs from CampaignCreated events, then fetch their info
   useEffect(() => {
@@ -86,36 +87,42 @@ export default function Home() {
   }, [publicClient]);
 
   useEffect(() => {
-    async function fetchImages() {
-      console.log('fetchImages called with campaigns:', campaigns);
+    async function fetchImagesAndDescriptions() {
+      console.log('fetchImagesAndDescriptions called with campaigns:', campaigns);
       
       const images: {[key: number]: string} = {};
+      const descriptions: {[key: number]: string} = {};
       await Promise.all(
         campaigns.map(async (campaign) => {
           try {
-            console.log(`Fetching image for campaign ${campaign.id}`);
+            console.log(`Fetching data for campaign ${campaign.id}`);
             const res = await fetch(`/api/campaign-image?campaignId=${campaign.id}`);
             console.log(`Response for campaign ${campaign.id}:`, res.status);
             
             if (res.ok) {
               const data = await res.json();
-              console.log(`Image data for campaign ${campaign.id}:`, data);
+              console.log(`Data for campaign ${campaign.id}:`, data);
               if (data.imageUrl) {
                 images[campaign.id] = data.imageUrl;
               }
+              if (data.description) {
+                descriptions[campaign.id] = data.description;
+              }
             } else {
-              console.log(`No image found for campaign ${campaign.id}`);
+              console.log(`No data found for campaign ${campaign.id}`);
             }
           } catch (e) {
-            console.error(`Error fetching image for campaign ${campaign.id}:`, e);
+            console.error(`Error fetching data for campaign ${campaign.id}:`, e);
           }
         })
       );
       
       console.log('Final images mapping:', images);
+      console.log('Final descriptions mapping:', descriptions);
       setCampaignImages(images);
+      setCampaignDescriptions(descriptions);
     }
-    if (campaigns.length > 0) fetchImages();
+    if (campaigns.length > 0) fetchImagesAndDescriptions();
   }, [campaigns]);
 
   const toggleFlip = (campaignId: number) => {
@@ -156,6 +163,9 @@ export default function Home() {
       targetAmount: number,
       annualInterestRate: number,
       clubName: string,
+      deadline: number,
+      loanDuration: number,
+      daysLeft: number,
       isLoading: boolean 
     }) => React.ReactNode 
   }) => {
@@ -166,10 +176,10 @@ export default function Home() {
       args: [BigInt(campaignId)],
     });
 
-    // Lecture des décimales du token PSG pour la conversion correcte
+    // Lecture des décimales du token USDC pour la conversion correcte
     const { data: tokenDecimals } = useReadContract({
-      address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-      abi: PSG_TOKEN_ABI,
+      address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+      abi: ERC20_ABI,
       functionName: 'decimals',
     });
 
@@ -177,7 +187,7 @@ export default function Home() {
     console.log(`Campaign ${campaignId} - Raw data:`, campaignInfo);
     console.log(`Token decimals:`, tokenDecimals);
 
-    const contributorsCount = campaignInfo ? Number(campaignInfo[8] || BigInt(0)) : 0;
+    const contributorsCount = campaignInfo ? Number(campaignInfo[10] || BigInt(0)) : 0;
     
     // Récupérer le nom du club (index 1)
     const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
@@ -217,6 +227,16 @@ export default function Home() {
     const rawAnnualInterestRate = campaignInfo ? campaignInfo[4] || BigInt(0) : BigInt(0);
     const annualInterestRate = Number(rawAnnualInterestRate) / 100;
     
+    // Récupérer la deadline (index 5) et calculer les jours restants
+    const rawDeadline = campaignInfo ? campaignInfo[5] || BigInt(0) : BigInt(0);
+    const deadline = Number(rawDeadline);
+    const currentTime = Math.floor(Date.now() / 1000);
+    const daysLeft = deadline > currentTime ? Math.ceil((deadline - currentTime) / (24 * 60 * 60)) : 0;
+    
+    // Récupérer la durée du prêt (index 6) - convertir en jours
+    const rawLoanDuration = campaignInfo ? campaignInfo[6] || BigInt(0) : BigInt(0);
+    const loanDuration = Math.floor(Number(rawLoanDuration) / (24 * 60 * 60));
+    
     console.log(`Campaign ${campaignId} - Processed:`, {
       contributorsCount,
       clubName: smartContractClubName,
@@ -226,6 +246,9 @@ export default function Home() {
       collectedAmount: collectedAmount + ' USDC',
       rawAnnualInterestRate: rawAnnualInterestRate.toString() + ' basis points',
       annualInterestRate: annualInterestRate + '%',
+      deadline: deadline + ' (' + new Date(deadline * 1000).toLocaleDateString('fr-FR') + ')',
+      loanDuration: loanDuration + ' jours',
+      daysLeft: daysLeft + ' jours restants',
       isLoading: isCampaignLoading
     });
     
@@ -235,6 +258,9 @@ export default function Home() {
       targetAmount,
       annualInterestRate,
       clubName: smartContractClubName,
+      deadline,
+      loanDuration,
+      daysLeft,
       isLoading: isCampaignLoading 
     })}</>;
   };
@@ -316,7 +342,7 @@ export default function Home() {
                         </div>
                         <CampaignInfo campaignId={campaign.id}>
                           {({ annualInterestRate, clubName, contributorsCount, collectedAmount, isLoading }) => {
-                            const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                            const hasSmartContractData = !isLoading && clubName;
                             const displayRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
                             
                             return (
@@ -354,7 +380,7 @@ export default function Home() {
                     <CampaignInfo campaignId={campaign.id}>
                       {({ contributorsCount, collectedAmount, targetAmount, clubName, isLoading }) => {
                         // Utiliser les données du smart contract si disponibles, sinon fallback vers JSON
-                        const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                        const hasSmartContractData = !isLoading && clubName;
                         const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
                         const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
                         
@@ -382,7 +408,7 @@ export default function Home() {
                     <CampaignInfo campaignId={campaign.id}>
                       {({ collectedAmount, targetAmount, clubName, contributorsCount, isLoading }) => {
                         // Utiliser les données du smart contract si disponibles, sinon fallback vers JSON
-                        const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                        const hasSmartContractData = !isLoading && clubName;
                         const currentAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
                         const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
                         const progressPercentage = getProgressPercentage(currentAmount, displayTarget);
@@ -444,7 +470,7 @@ export default function Home() {
                     </div>
                     <div className="relative z-10 flex-1 flex items-center justify-center">
                       <p className="text-white text-xl leading-relaxed text-center max-w-md">
-                        {campaign.description}
+                        {campaignDescriptions[campaign.id] || campaign.description || 'No description available'}
                       </p>
                     </div>
                   </div>
@@ -480,24 +506,29 @@ export default function Home() {
                       <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                           <CampaignInfo campaignId={campaign.id}>
-                            {({ annualInterestRate, clubName, contributorsCount, collectedAmount, isLoading }) => {
-                              const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                            {({ annualInterestRate, clubName, contributorsCount, collectedAmount, daysLeft, isLoading }) => {
+                              const hasSmartContractData = !isLoading && clubName;
                               const displayRate = hasSmartContractData ? annualInterestRate : campaign.interestRate;
+                              const displayDaysLeft = hasSmartContractData ? daysLeft : campaign.daysLeft;
                               
                               return (
-                                <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                                  <div className="text-2xl font-bold text-green-400">
-                                    {isLoading ? '...' : displayRate}%
+                                <>
+                                  <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                                    <div className="text-2xl font-bold text-green-400">
+                                      {isLoading ? '...' : displayRate}%
+                                    </div>
+                                    <div className="text-sm text-gray-300">Annual Yield</div>
                                   </div>
-                                  <div className="text-sm text-gray-300">Annual Yield</div>
-                                </div>
+                                  <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                                    <div className="text-2xl font-bold text-blue-400">
+                                      {isLoading ? '...' : displayDaysLeft}
+                                    </div>
+                                    <div className="text-sm text-gray-300">Days Left</div>
+                                  </div>
+                                </>
                               );
                             }}
                           </CampaignInfo>
-                          <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                            <div className="text-2xl font-bold text-blue-400">{campaign.daysLeft}</div>
-                            <div className="text-sm text-gray-300">Days Left</div>
-                          </div>
                         </div>
 
                         <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
@@ -507,7 +538,7 @@ export default function Home() {
                               <span>Target Amount:</span>
                               <CampaignInfo campaignId={campaign.id}>
                                 {({ targetAmount, clubName, contributorsCount, collectedAmount, isLoading }) => {
-                                  const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                  const hasSmartContractData = !isLoading && clubName;
                                   const displayTarget = hasSmartContractData ? targetAmount : campaign.targetAmount;
                                   
                                   return (
@@ -522,7 +553,7 @@ export default function Home() {
                               <span>Current Funding:</span>
                               <CampaignInfo campaignId={campaign.id}>
                                 {({ collectedAmount, clubName, contributorsCount, isLoading }) => {
-                                  const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                  const hasSmartContractData = !isLoading && clubName;
                                   const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
                                   
                                   return (
@@ -535,13 +566,24 @@ export default function Home() {
                             </div>
                             <div className="flex justify-between">
                               <span>Duration:</span>
-                              <span className="text-white font-medium">{campaign.duration}</span>
+                              <CampaignInfo campaignId={campaign.id}>
+                                {({ loanDuration, clubName, isLoading }) => {
+                                  const hasSmartContractData = !isLoading && clubName;
+                                  const displayDuration = hasSmartContractData ? `${loanDuration} jours` : campaign.duration;
+                                  
+                                  return (
+                                    <span className="text-white font-medium">
+                                      {isLoading ? '...' : displayDuration}
+                                    </span>
+                                  );
+                                }}
+                              </CampaignInfo>
                             </div>
                             <div className="flex justify-between">
                               <span>Total Investors:</span>
                               <CampaignInfo campaignId={campaign.id}>
                                 {({ contributorsCount, clubName, collectedAmount, isLoading }) => {
-                                  const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
+                                  const hasSmartContractData = !isLoading && clubName;
                                   const displayInvestors = hasSmartContractData ? contributorsCount : campaign.backers;
                                   
                                   return (
