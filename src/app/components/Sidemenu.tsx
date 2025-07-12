@@ -160,13 +160,10 @@ const Sidemenu = () => {
           // Wallet non connecté - bouton de connexion avec design custom
           <div className="relative">
             {/* Bouton custom avec le design du sidemenu */}
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 font-sans">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold font-sans">$</span>
-              </div>
+            <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 font-sans">  
               <div className="flex-1">
-                <div className="text-white font-medium text-sm font-sans">Non connecté</div>
-                <div className="text-gray-400 text-sm font-sans">Cliquer pour connecter</div>
+                <div className="text-white font-medium text-sm font-sans">Not connected</div>
+                <div className="text-gray-400 text-sm font-sans">Click to connect</div>
               </div>
             </div>
             
