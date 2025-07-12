@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import campaignsData from "../../data/campaigns.json";
-import { useReadContract } from 'wagmi';
+import { useReadContract, usePublicClient } from 'wagmi';
 import { CONTRACTS, TWELFTH_MAN_ABI } from "../../config/contracts";
 import { 
   generateMockLeaderboard, 
@@ -15,13 +14,33 @@ import {
   type MockLeaderboardEntry 
 } from "../../utils/mockLeaderboard";
 import { usePSGLeaderboard, type PSGLeaderboardEntry } from "../../hooks/usePSGLeaderboard";
+import { getAllCampaigns, type Campaign } from "../../utils/campaignUtils";
 
 export default function LeaderboardPage() {
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<(MockLeaderboardEntry | PSGLeaderboardEntry)[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
 
-  const campaigns = campaignsData;
+  const publicClient = usePublicClient();
   const globalStats = getMockGlobalStats();
+  
+  // Charger toutes les campagnes (statiques + dynamiques)
+  useEffect(() => {
+    async function fetchCampaigns() {
+      setLoadingCampaigns(true);
+      try {
+        const allCampaigns = await getAllCampaigns(publicClient);
+        setCampaigns(allCampaigns);
+      } catch (error) {
+        console.error('Erreur lors du chargement des campagnes:', error);
+      } finally {
+        setLoadingCampaigns(false);
+      }
+    }
+    
+    fetchCampaigns();
+  }, [publicClient]);
   
   // Hook to fetch PSG data from smart contract
   const { 
@@ -42,8 +61,8 @@ export default function LeaderboardPage() {
       isLoading: boolean 
     }) => React.ReactNode 
   }) => {
-    // Trouver la campagne correspondante dans nos données JSON
-    const campaignData = campaigns.find(c => c.id === campaignId);
+    // Trouver la campagne correspondante dans nos données
+    const campaignData = campaigns.find((c: Campaign) => c.id === campaignId);
     
     // Essayer de récupérer les données blockchain comme complément (désactivé pour la démo)
     const { data: campaignInfo, isLoading } = useReadContract({
@@ -66,7 +85,7 @@ export default function LeaderboardPage() {
     
     // Fallback vers les données blockchain si pas de données JSON
     if (campaignInfo) {
-      const contributorsCount = Number(campaignInfo[8] || BigInt(0));
+      const contributorsCount = Number(campaignInfo[10] || BigInt(0));
       const smartContractClubName = campaignInfo[1] || '';
       const rawCollectedAmount = campaignInfo[3] || BigInt(0);
       const collectedAmount = Number(rawCollectedAmount) / Math.pow(10, 18);
@@ -106,7 +125,7 @@ export default function LeaderboardPage() {
   };
 
   if (selectedClub) {
-    const selectedCampaign = campaigns.find(c => c.id === selectedClub);
+    const selectedCampaign = campaigns.find((c: Campaign) => c.id === selectedClub);
     const clubStats = getMockClubStats(selectedClub);
     
     return (
@@ -284,6 +303,30 @@ export default function LeaderboardPage() {
     );
   }
 
+  if (loadingCampaigns) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8 font-sans">
+        <div className="text-center mb-16">
+          <div className="rounded-2xl p-8 mx-auto max-w-4xl">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+              <span className="text-white drop-shadow-2xl" style={{textShadow: '0 4px 8px rgba(0, 0, 0, 0.8)'}}>
+                Leaderboard
+              </span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+              Discover the top contributors for each football club campaign
+            </p>
+          </div>
+        </div>
+        
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-gray-400 text-lg">Loading campaigns...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 font-sans">
       {/* Hero Section */}
@@ -302,7 +345,7 @@ export default function LeaderboardPage() {
 
       {/* Clubs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {campaigns.map((campaign) => (
+        {campaigns.map((campaign: Campaign) => (
           <div
             key={campaign.id}
             onClick={() => handleClubClick(campaign.id)}

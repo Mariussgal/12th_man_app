@@ -2,7 +2,6 @@
   {
     "id": 1001,
     "clubName": "Paris Saint-Germain",
-    "league": "Ligue 1",
     "targetAmount": 25000,
     "currentAmount": 18750,
     "interestRate": 18,
@@ -16,7 +15,6 @@
   {
     "id": 1002,
     "clubName": "Olympique Lyonnais",
-    "league": "Ligue 1",
     "targetAmount": 15000,
     "currentAmount": 14250,
     "interestRate": 24,
@@ -30,7 +28,6 @@
   {
     "id": 1003,
     "clubName": "Olympique de Marseille",
-    "league": "Ligue 1",
     "targetAmount": 20000,
     "currentAmount": 6800,
     "interestRate": 8,
@@ -44,7 +41,6 @@
   {
     "id": 1004,
     "clubName": "Chelsea FC",
-    "league": "Premier League",
     "targetAmount": 30000,
     "currentAmount": 28500,
     "interestRate": 34,
@@ -58,7 +54,6 @@
   {
     "id": 1005,
     "clubName": "FC Barcelona",
-    "league": "La Liga",
     "targetAmount": 35000,
     "currentAmount": 32900,
     "interestRate": 11,

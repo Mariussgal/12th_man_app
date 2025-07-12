@@ -82,7 +82,7 @@ export function usePSGLeaderboard() {
       };
     }
 
-    const contributorsCount = Number(campaignInfo[8] || BigInt(0));
+    const contributorsCount = Number(campaignInfo[10] || BigInt(0));
     const rawCollectedAmount = campaignInfo[3] || BigInt(0);
     
     const collectedAmountPSG = formatPSGAmount(rawCollectedAmount);

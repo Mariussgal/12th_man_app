@@ -33,7 +33,7 @@ interface Campaign {
     // Debug logs
     console.log(`CampaignCard ${campaign.id} - Raw data:`, campaignInfo);
 
-    const contributorsCount = campaignInfo ? Number(campaignInfo[8] || BigInt(0)) : 0;
+    const contributorsCount = campaignInfo ? Number(campaignInfo[10] || BigInt(0)) : 0;
     
     // Récupérer le nom du club (index 1)
     const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
