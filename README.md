@@ -109,7 +109,8 @@ sequenceDiagram
     Note over Fan,PSGToken: Fan is now a campaign contributor
 ```
 
-**KYC Requirements:**
+### KYC Requirements:
+
 - Club name and legal status
 - Registration number and address
 - Representative identification
