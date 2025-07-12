@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
 import Aurora from "./components/Aurora";
-import Header from "./components/Header";
 import { Providers } from './providers';
 import AccountGate from "./components/AccountGate";
 import ResponsiveLayout from "./components/ResponsiveLayout";
@@ -71,7 +70,6 @@ export default function RootLayout({
           {/* Responsive Layout Wrapper */}
           <ResponsiveLayout>
             {/* Top Header */}
-            <Header/>
             <AccountGate />
 
             {/* Main Content */}
