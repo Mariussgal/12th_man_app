@@ -32,6 +32,7 @@ It works like a **decentralized investment platform** where fans become the **12
 ### Platform Architecture
 
 ```mermaid
+graph TB
     subgraph "Frontend Layer"
         A[Next.js Application]
         B[React Components]
@@ -63,7 +64,6 @@ It works like a **decentralized investment platform** where fans become the **12
     F --> J
     A --> G
 ```
-
 
 ### Campaign Creation & Management
 
