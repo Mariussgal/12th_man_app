@@ -39,20 +39,20 @@ export default function KycPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setSuccess("Votre demande KYC a bien été soumise. Elle est en attente de validation.");
-        // Stocker localement que le KYC a été soumis
+        setSuccess("Your KYC application has been successfully submitted and is pending validation.");
+        // Store locally that KYC has been submitted
         if (address) {
           localStorage.setItem(`kyc_submitted_${address}`, 'true');
         }
-        // Rediriger vers la page d'accueil après 2 secondes
+        // Redirect to home page after 2 seconds
         setTimeout(() => {
           router.push("/");
         }, 2000);
       } else {
-        setError(data.message || "Erreur lors de la soumission du KYC.");
+        setError(data.message || "Error occurred during KYC submission.");
       }
     } catch (e) {
-      setError("Erreur réseau lors de la soumission du KYC.");
+      setError("Network error during KYC submission.");
     } finally {
       setLoading(false);
     }
@@ -60,47 +60,47 @@ export default function KycPage() {
 
   return (
     <div className="max-w-xl mx-auto p-8 bg-gray-900 rounded-xl mt-10 border border-gray-700 shadow-lg">
-      <h1 className="text-2xl font-bold text-white mb-6 text-center">Formulaire KYC Club</h1>
+      <h1 className="text-2xl font-bold text-white mb-6 text-center">Club KYC Form</h1>
       {success ? (
         <div className="bg-green-900/30 text-green-300 p-4 rounded mb-4 text-center">{success}</div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="hidden" name="clubWalletAddress" value={address || ""} />
           <div>
-            <label className="block text-gray-300 mb-1">Nom du club *</label>
+            <label className="block text-gray-300 mb-1">Club Name *</label>
             <input name="clubName" value={form.clubName} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Statut légal *</label>
-            <input name="legalStatus" value={form.legalStatus} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+            <label className="block text-gray-300 mb-1">Legal Status *</label>
+            <input name="legalStatus" value={form.legalStatus} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="e.g., Association, Corporation, Ltd." />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Numéro d'enregistrement *</label>
-            <input name="registrationNumber" value={form.registrationNumber} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+            <label className="block text-gray-300 mb-1">Registration Number *</label>
+            <input name="registrationNumber" value={form.registrationNumber} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="Official registration number" />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Adresse *</label>
-            <input name="address" value={form.address} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+            <label className="block text-gray-300 mb-1">Address *</label>
+            <input name="address" value={form.address} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="Full business address" />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Nom du représentant *</label>
-            <input name="representativeName" value={form.representativeName} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+            <label className="block text-gray-300 mb-1">Representative Name *</label>
+            <input name="representativeName" value={form.representativeName} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="Legal representative full name" />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Lien vers un justificatif (statuts, etc.) *</label>
-            <input name="documentUrl" value={form.documentUrl} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="URL du document" />
+            <label className="block text-gray-300 mb-1">Legal Document URL *</label>
+            <input name="documentUrl" value={form.documentUrl} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="Link to articles of incorporation, bylaws, etc." />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Lien vers la pièce d'identité du représentant *</label>
-            <input name="idCardUrl" value={form.idCardUrl} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="URL de la pièce d'identité" />
+            <label className="block text-gray-300 mb-1">Representative ID Document URL *</label>
+            <input name="idCardUrl" value={form.idCardUrl} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" placeholder="Link to representative's ID document" />
           </div>
           <div>
-            <label className="block text-gray-300 mb-1">Numéro d'affiliation (optionnel)</label>
-            <input name="affiliationNumber" value={form.affiliationNumber} onChange={handleChange} className="w-full p-2 rounded bg-gray-800 text-white" />
+            <label className="block text-gray-300 mb-1">Affiliation Number (Optional)</label>
+            <input name="affiliationNumber" value={form.affiliationNumber} onChange={handleChange} className="w-full p-2 rounded bg-gray-800 text-white" placeholder="League/Federation affiliation number" />
           </div>
           {error && <div className="bg-red-900/30 text-red-300 p-2 rounded text-center">{error}</div>}
           <button type="submit" disabled={loading} className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all">
-            {loading ? "Envoi en cours..." : "Soumettre le KYC"}
+            {loading ? "Submitting..." : "Submit KYC Application"}
           </button>
         </form>
       )}
