@@ -4,7 +4,6 @@ import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
 import Aurora from "./components/Aurora";
 import Header from "./components/Header";
-import Sidemenu from "./components/Sidemenu";
 import { Providers } from './providers';
 import AccountGate from "./components/AccountGate";
 import ResponsiveLayout from "./components/ResponsiveLayout";
@@ -24,6 +23,28 @@ export const metadata: Metadata = {
   title: "12th Man - Web3 Crowdfunding for Football Clubs",
   description: "Fund your favorite club and earn interest in $CHZ",
   keywords: "football, crowdfunding, web3, chiliz, NFT, clubs",
+  openGraph: {
+    title: "12th Man - Web3 Crowdfunding for Football Clubs",
+    description: "Fund your favorite club and earn interest in $CHZ",
+    url: "https://12th-man-app.vercel.app/", 
+    siteName: "12th Man",
+    images: [
+      {
+        url: "/banner.png", // Your banner image
+        width: 1200,
+        height: 630,
+        alt: "12th Man - Web3 Crowdfunding Platform",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "12th Man - Web3 Crowdfunding for Football Clubs",
+    description: "Fund your favorite club and earn interest in $CHZ",
+    images: ["/banner.png"],
+  },
 };
 
 export default function RootLayout({
