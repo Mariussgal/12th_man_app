@@ -240,11 +240,11 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 font-sans">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 font-sans">
       {/* Hero Section */}
       <div className="text-center mb-16">
-        <div className="rounded-2xl p-8 mx-auto max-w-4xl">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+        <div className="rounded-2xl p-4 sm:p-8 mx-auto max-w-4xl">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 tracking-tight">
             <span className="text-white drop-shadow-2xl" style={{textShadow: '0 4px 8px rgba(0, 0, 0, 0.8)'}}>
               Fund your club,
             </span>
@@ -253,14 +253,14 @@ export default function Home() {
               earn in $CHZ
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Lend to your favorite football club and receive guaranteed interest in $CHZ
           </p>
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-3 gap-6 mb-12 max-w-2xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-2xl mx-auto">
         <div className="text-center">
           <div className="text-3xl font-bold text-white mb-1">€287K</div>
           <div className="text-sm text-gray-400">Total Funded</div>
