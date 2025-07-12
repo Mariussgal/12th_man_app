@@ -109,27 +109,6 @@ sequenceDiagram
     Note over Fan,PSGToken: Fan is now a campaign contributor
 ```
 
-### KYC Verification Process
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant API
-    participant Database
-    participant Admin
-    
-    User->>Frontend: Fill KYC form
-    Frontend->>API: POST /api/kyc/submit
-    API->>Database: Store KYC data
-    Database-->>API: Confirmation
-    API-->>Frontend: Submission success
-    
-    Admin->>Database: Review KYC applications
-    Admin->>Database: Approve/Reject KYC
-    Database-->>User: KYC status update
-```
-
 **KYC Requirements:**
 - Club name and legal status
 - Registration number and address
