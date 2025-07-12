@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAccount, useBalance, useDisconnect } from "wagmi";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 
 interface SidemenuProps {
   isOpen?: boolean;
@@ -57,6 +58,10 @@ const Sidemenu = ({ isOpen = false, onClose }: SidemenuProps) => {
       name: "How it works",
       path: "/how-it-works",
     },
+    {
+      name: "Github",
+      path: "https://github.com/Mariussgal/12th_man_app",
+    },
   ];
 
   // Fonction pour formater l'adresse
@@ -109,7 +114,7 @@ const Sidemenu = ({ isOpen = false, onClose }: SidemenuProps) => {
 
         {/* Logo/Header */}
         <div className="p-6">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center">
             <button
               onClick={() => {
                 if (pathname === "/") {
@@ -121,17 +126,25 @@ const Sidemenu = ({ isOpen = false, onClose }: SidemenuProps) => {
                 // Close mobile menu after navigation
                 if (onClose) onClose();
               }}
-              className="focus:outline-none cursor-big"
+              className="focus:outline-none cursor-big mt-5"
               title="Retour au menu principal"
               aria-label="Retour au menu principal"
             >
-              <h1 className="text-xl font-bold text-white font-sans">12th Man</h1>
+              <Image
+                src="/logo12th_man.png"
+                alt="12th Man"
+                width={280}
+                height={120}
+                quality={100}
+                priority
+                className="object-contain w-auto h-auto max-w-[280px] max-h-[120px]"
+              />
             </button>
           </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 p-4 mt-8 md:mt-40">
+        <nav className="flex-1 p-4 mt-8 md:mt-10">
           <ul className="space-y-2">
             {menuItems.map((item) => (
               <li key={item.name}>
