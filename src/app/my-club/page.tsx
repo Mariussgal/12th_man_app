@@ -12,7 +12,7 @@ export default function MyClubPage() {
   const [kycStatus, setKycStatus] = useState<string>("pending");
   const [loading, setLoading] = useState(true);
 
-  // Formulaire
+  // Form
   const [form, setForm] = useState({
     clubName: "",
     targetAmount: "",
@@ -26,7 +26,7 @@ export default function MyClubPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  // Récupérer infos user
+  // Get user info
   useEffect(() => {
     if (!isConnected || !address) return;
     setLoading(true);
@@ -36,13 +36,13 @@ export default function MyClubPage() {
           const user = await res.json();
           setAccountType(user.accountType);
           setKycValidated(!!user.kycValidated);
-          setKycStatus(user.kycStatus || (user.kycValidated ? "validé" : "en attente"));
+          setKycStatus(user.kycStatus || (user.kycValidated ? "validated" : "pending"));
         }
       })
       .finally(() => setLoading(false));
   }, [isConnected, address]);
 
-  // Wagmi pour écrire sur le smart contract
+  // Wagmi for writing to smart contract
   const { writeContract, data: txData, isPending: isTxLoading, error: txError } = useWriteContract();
 
   const { isSuccess: isTxSuccess } = useWaitForTransactionReceipt({
@@ -178,13 +178,11 @@ export default function MyClubPage() {
     const targetAmount = BigInt(Math.floor(Number(form.targetAmount) * 1e18));
     const annualInterestRate = BigInt(Math.floor(Number(form.annualInterestRate) * 100)); // en basis points
     const duration = BigInt(Number(form.duration) * 24 * 3600); // jours -> secondes
-    // Ici tu pourrais aussi envoyer uploadedImageUrl à ton backend ou smart contract si besoin
     writeContract({
       address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
       abi: TWELFTH_MAN_ABI,
       functionName: "createCampaign",
       args: [form.clubName, targetAmount, annualInterestRate, duration] as [string, bigint, bigint, bigint],
-      // imageUrl: uploadedImageUrl (à utiliser côté backend ou smart contract si besoin)
     });
   };
 

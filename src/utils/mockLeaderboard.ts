@@ -31,8 +31,8 @@ function shuffleWithSeed<T>(array: T[], seed: number): T[] {
   return shuffled;
 }
 
-// Prix PSG fictif en USD (tu peux ajuster)
-const PSG_PRICE_USD = 1.2;
+// Prix PSG fictif en USD (1 PSG = 1 USD)
+const PSG_PRICE_USD = 1.0;
 
 // Fonction pour générer le leaderboard d'un club spécifique
 export function generateMockLeaderboard(campaignId: number): MockLeaderboardEntry[] {

@@ -211,9 +211,9 @@ export default function Home() {
       contributorsCount,
       clubName: smartContractClubName,
       rawTargetAmount: rawTargetAmount.toString(),
-      targetAmount: targetAmount + ' PSG',
+      targetAmount: targetAmount + ' USDC',
       rawCollectedAmount: rawCollectedAmount.toString(),
-      collectedAmount: collectedAmount + ' PSG',
+      collectedAmount: collectedAmount + ' USDC',
       rawAnnualInterestRate: rawAnnualInterestRate.toString() + ' basis points',
       annualInterestRate: annualInterestRate + '%',
       isLoading: isCampaignLoading

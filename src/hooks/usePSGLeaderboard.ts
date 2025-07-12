@@ -17,8 +17,8 @@ export interface PSGStats {
   averageContributionUSD: number;
 }
 
-// Prix PSG en USD (même que dans mockLeaderboard pour cohérence)
-const PSG_PRICE_USD = 1.2;
+// Prix PSG en USD (1 PSG = 1 USD)
+const PSG_PRICE_USD = 1.0;
 
 // Hook spécialisé pour récupérer le leaderboard PSG depuis le smart contract
 export function usePSGLeaderboard() {

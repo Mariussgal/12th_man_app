@@ -36,7 +36,7 @@ export default function ProfilePage() {
     hash: claimHash,
   });
 
-  // Récupérer les campagnes où l'utilisateur a contribué
+  // Get campaigns where user has contributed
   const { data: userCampaignIds, refetch: refetchUserCampaigns } = useReadContract({
     address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
     abi: TWELFTH_MAN_ABI,
@@ -45,7 +45,7 @@ export default function ProfilePage() {
     query: { enabled: !!address && isConnected }
   });
 
-  // Récupérer le solde PSG
+  // Get PSG balance
   const { data: psgBalance = '0' } = useReadContract({
     address: CONTRACTS.PSG_TOKEN as `0x${string}`,
     abi: PSG_TOKEN_ABI,
@@ -54,7 +54,7 @@ export default function ProfilePage() {
     query: { enabled: !!address }
   });
 
-  // Récupérer les décimales du token PSG
+  // Get PSG token decimals
   const { data: tokenDecimals } = useReadContract({
     address: CONTRACTS.PSG_TOKEN as `0x${string}`,
     abi: PSG_TOKEN_ABI,
@@ -292,8 +292,8 @@ export default function ProfilePage() {
             <p className="text-white font-mono">{formatAddress(address || '')}</p>
           </div>
           <div>
-            <p className="text-gray-400 text-sm">PSG Balance</p>
-            <p className="text-white font-medium">{formatPSGBalance(psgBalance, tokenDecimals)} PSG</p>
+            <p className="text-gray-400 text-sm">USDC Balance</p>
+            <p className="text-white font-medium">{formatPSGBalance(psgBalance, tokenDecimals)} USDC</p>
           </div>
         </div>
       </div>
@@ -350,7 +350,7 @@ export default function ProfilePage() {
                                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                          <div>
                            <p className="text-gray-400 text-sm">My Investment</p>
-                           <p className="text-white font-bold text-lg">{contribution} PSG</p>
+                           <p className="text-white font-bold text-lg">{contribution} USDC</p>
                          </div>
                          {campaignInfo && (
                            <>
@@ -407,7 +407,7 @@ export default function ProfilePage() {
         <div className="space-y-3 text-sm text-gray-300">
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
-            <p>Your PSG token investments are listed above</p>
+            <p>Your USDC token investments are listed above</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
