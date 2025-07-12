@@ -14,15 +14,25 @@ import {
   formatAddress,
   type MockLeaderboardEntry 
 } from "../../utils/mockLeaderboard";
+import { usePSGLeaderboard, type PSGLeaderboardEntry } from "../../hooks/usePSGLeaderboard";
 
 export default function LeaderboardPage() {
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
-  const [leaderboardData, setLeaderboardData] = useState<MockLeaderboardEntry[]>([]);
+  const [leaderboardData, setLeaderboardData] = useState<(MockLeaderboardEntry | PSGLeaderboardEntry)[]>([]);
 
   const campaigns = campaignsData;
   const globalStats = getMockGlobalStats();
+  
+  // Hook pour récupérer les données PSG depuis le smart contract
+  const { 
+    leaderboard: psgLeaderboard, 
+    stats: psgStats, 
+    isLoading: isPSGLoading,
+    error: psgError,
+    hasData: hasPSGData 
+  } = usePSGLeaderboard();
 
-  // Hook pour récupérer les informations d'une campagne
+  // Hook pour récupérer les informations de campagne depuis le smart contract
   const CampaignInfo = ({ campaignId, children }: { 
     campaignId: number, 
     children: (data: { 
@@ -60,9 +70,8 @@ export default function LeaderboardPage() {
     setSelectedClub(campaignId);
     
     if (campaignId === 1) {
-      // PSG - pas de données mock, on laissera vide pour l'instant
-      // Les vraies données viendront du smart contract plus tard
-      setLeaderboardData([]);
+      // PSG - utiliser les données du smart contract
+      setLeaderboardData(psgLeaderboard);
     } else {
       // Autres clubs - générer les données mock
       const mockLeaderboard = generateMockLeaderboard(campaignId);
@@ -111,33 +120,35 @@ export default function LeaderboardPage() {
         {/* Stats rapides */}
         <div className="grid grid-cols-3 gap-6 mb-8">
           {selectedClub === 1 ? (
-            // PSG - utiliser les données smart contract
-            <CampaignInfo campaignId={selectedClub}>
-              {({ contributorsCount, collectedAmount, isLoading }) => (
-                <>
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                    <div className="text-2xl font-bold text-white mb-1">
-                      {isLoading ? '...' : contributorsCount}
-                    </div>
-                    <div className="text-gray-400 text-sm">Total Contributors</div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                    <div className="text-2xl font-bold text-green-400 mb-1">
-                      {isLoading ? '...' : formatCurrency(collectedAmount)}
-                    </div>
-                    <div className="text-gray-400 text-sm">Total Raised</div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
-                    <div className="text-2xl font-bold text-blue-400 mb-1">
-                      {isLoading ? '...' : (contributorsCount > 0 ? (collectedAmount / contributorsCount).toFixed(0) : '0')}
-                    </div>
-                    <div className="text-gray-400 text-sm">Avg. Contribution</div>
-                  </div>
-                </>
-              )}
-            </CampaignInfo>
+            // PSG - utiliser les données du hook PSG
+            <>
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
+                <div className="text-2xl font-bold text-white mb-1">
+                  {isPSGLoading ? '...' : psgStats.totalContributors}
+                </div>
+                <div className="text-gray-400 text-sm">Total Contributors</div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
+                <div className="text-2xl font-bold text-green-400 mb-1">
+                  {isPSGLoading ? '...' : formatAmountUSD(psgStats.totalAmountUSD)}
+                </div>
+                <div className="text-gray-400 text-sm">Total Raised</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {isPSGLoading ? '...' : formatAmount(psgStats.totalAmount)} PSG
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
+                <div className="text-2xl font-bold text-blue-400 mb-1">
+                  {isPSGLoading ? '...' : formatAmountUSD(psgStats.averageContributionUSD)}
+                </div>
+                <div className="text-gray-400 text-sm">Avg. Contribution</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {isPSGLoading ? '...' : formatAmount(psgStats.averageContribution)} PSG
+                </div>
+              </div>
+            </>
           ) : (
             // Autres clubs - utiliser les données mock
             (() => {
@@ -180,7 +191,7 @@ export default function LeaderboardPage() {
         <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-3xl backdrop-blur-md border border-white/20 overflow-hidden">
           <div className="p-6 border-b border-white/10">
             <h2 className="text-xl font-bold text-white">Leaderboard</h2>
-            <p className="text-gray-400 text-sm">Top 50 contributors ranked by amount invested</p>
+            <p className="text-gray-400 text-sm">Top 10 contributors ranked by amount invested</p>
           </div>
           
           <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto">
@@ -225,8 +236,32 @@ export default function LeaderboardPage() {
           
           {leaderboardData.length === 0 && (
             <div className="p-12 text-center">
-              <div className="text-gray-400 mb-2">No contributors yet</div>
-              <div className="text-gray-500 text-sm">Be the first to contribute to this campaign!</div>
+              {selectedClub === 1 ? (
+                // Messages spécifiques pour PSG
+                isPSGLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
+                    <div className="text-gray-400 mb-2">Loading PSG contributors...</div>
+                    <div className="text-gray-500 text-sm">Fetching data from smart contract</div>
+                  </>
+                ) : psgError ? (
+                  <>
+                    <div className="text-red-400 mb-2">Error loading PSG data</div>
+                    <div className="text-gray-500 text-sm">{psgError}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-gray-400 mb-2">No contributors yet</div>
+                    <div className="text-gray-500 text-sm">Be the first to contribute to this campaign!</div>
+                  </>
+                )
+              ) : (
+                // Messages pour autres clubs
+                <>
+                  <div className="text-gray-400 mb-2">No contributors yet</div>
+                  <div className="text-gray-500 text-sm">Be the first to contribute to this campaign!</div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -265,16 +300,18 @@ export default function LeaderboardPage() {
             <div className="relative p-8 rounded-3xl transition-transform duration-300 group-hover:-translate-y-1">
               {/* Club Header */}
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden">
-                    <Image
-                      src={campaign.clubLogo}
-                      alt={`${campaign.clubName} logo`}
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
+                <div className="flex justify-between items-center space-x-4">
+                  {campaign.clubLogo && (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden">
+                      <Image
+                        src={campaign.clubLogo}
+                        alt={`${campaign.clubName} logo`}
+                        width={48}
+                        height={48}
+                        className="object-contain"
+                      />
+                    </div>
+                  )}
                   <div>
                     <CampaignInfo campaignId={campaign.id}>
                       {({ clubName, isLoading }) => (
@@ -291,26 +328,29 @@ export default function LeaderboardPage() {
               {/* Stats */}
               <CampaignInfo campaignId={campaign.id}>
                 {({ contributorsCount, collectedAmount, clubName, isLoading }) => {
-                  // PSG (id: 1) utilise les données du smart contract, les autres utilisent les données mock
+                  // PSG (id: 1) utilise les données du hook PSG, les autres utilisent les données mock
                   if (campaign.id === 1) {
-                    // PSG - données smart contract
-                    const hasSmartContractData = !isLoading && (clubName || contributorsCount > 0 || collectedAmount > 0);
-                    const displayAmount = hasSmartContractData ? collectedAmount : campaign.currentAmount;
-                    const displayContributors = hasSmartContractData ? contributorsCount : campaign.backers;
-                    
+                    // PSG - données du hook spécialisé
                     return (
                       <div className="space-y-4">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Contributors:</span>
                           <span className="text-white font-semibold">
-                            {isLoading ? '...' : displayContributors}
+                            {isPSGLoading ? '...' : psgStats.totalContributors}
                           </span>
                         </div>
                         
                         <div className="flex justify-between">
                           <span className="text-gray-400">Total Raised:</span>
                           <span className="text-green-400 font-semibold">
-                            {isLoading ? '...' : formatCurrency(displayAmount)}
+                            {isPSGLoading ? '...' : formatAmountUSD(psgStats.totalAmountUSD)}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">In PSG:</span>
+                          <span className="text-gray-300 text-sm">
+                            {isPSGLoading ? '...' : formatAmount(psgStats.totalAmount)} PSG
                           </span>
                         </div>
                       </div>
