@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { CONTRACTS, TWELFTH_MAN_ABI } from "../../config/contracts";
+import { parseAbiItem, getEventSelector, decodeEventLog } from 'viem';
 
 export default function MyClubPage() {
   const { address, isConnected } = useAccount();
@@ -18,6 +19,9 @@ export default function MyClubPage() {
     annualInterestRate: "",
     duration: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
@@ -45,6 +49,8 @@ export default function MyClubPage() {
     hash: txHash && txHash.startsWith('0x') ? (txHash as `0x${string}`) : undefined
   });
 
+  const publicClient = usePublicClient();
+
   // Gérer les succès et erreurs
   useEffect(() => {
     if (txData) {
@@ -68,18 +74,102 @@ export default function MyClubPage() {
         annualInterestRate: "",
         duration: "",
       });
+      setImagePreview(null);
+      setImageFile(null);
+      setImageUrl(null);
     }
   }, [isTxSuccess]);
+
+  useEffect(() => {
+    const saveImage = async () => {
+      if (isTxSuccess && txHash && imageUrl && publicClient) {
+        try {
+          const receipt = await publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
+          // Décoder l'event CampaignCreated
+          const eventSignature = getEventSelector(
+            "CampaignCreated(uint256,address,string,uint256,uint256,uint256,uint256)"
+          );
+          const log = receipt.logs.find(log => log.topics[0] === eventSignature);
+          if (log) {
+            const decoded = decodeEventLog({
+              abi: [
+                {
+                  type: 'event',
+                  name: 'CampaignCreated',
+                  inputs: [
+                    { indexed: true, name: 'campaignId', type: 'uint256' },
+                    { indexed: true, name: 'clubOwner', type: 'address' },
+                    { indexed: false, name: 'clubName', type: 'string' },
+                    { indexed: false, name: 'targetAmount', type: 'uint256' },
+                    { indexed: false, name: 'annualInterestRate', type: 'uint256' },
+                    { indexed: false, name: 'duration', type: 'uint256' },
+                    { indexed: false, name: 'deadline', type: 'uint256' },
+                  ],
+                  anonymous: false,
+                },
+              ],
+              data: log.data,
+              topics: log.topics,
+            });
+            const campaignId = Number(decoded.args.campaignId);
+            // Enregistrer dans MongoDB
+            await fetch('/api/campaign-image', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ campaignId, imageUrl }),
+            });
+          }
+        } catch (e) {
+          // Optionnel : afficher une erreur si besoin
+          console.error('Erreur lors de l’enregistrement de l’image de campagne :', e);
+        }
+      }
+    };
+    saveImage();
+  }, [isTxSuccess, txHash, imageUrl, publicClient]);
 
   // Gestion du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  const uploadToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "unsigned_preset");
+    const res = await fetch("https://api.cloudinary.com/v1_1/dbjmkzn2c/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Erreur lors de l'upload de l'image");
+    const data = await res.json();
+    return data.secure_url as string;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    let uploadedImageUrl = imageUrl;
+    try {
+      if (imageFile) {
+        uploadedImageUrl = await uploadToCloudinary(imageFile);
+        setImageUrl(uploadedImageUrl);
+      }
+    } catch (err) {
+      setError("Erreur lors de l'upload de l'image. Veuillez réessayer.");
+      return;
+    }
     if (!form.clubName || !form.targetAmount || !form.annualInterestRate || !form.duration) {
       setError("Tous les champs sont obligatoires");
       return;
@@ -88,11 +178,13 @@ export default function MyClubPage() {
     const targetAmount = BigInt(Math.floor(Number(form.targetAmount) * 1e18));
     const annualInterestRate = BigInt(Math.floor(Number(form.annualInterestRate) * 100)); // en basis points
     const duration = BigInt(Number(form.duration) * 24 * 3600); // jours -> secondes
+    // Ici tu pourrais aussi envoyer uploadedImageUrl à ton backend ou smart contract si besoin
     writeContract({
       address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
       abi: TWELFTH_MAN_ABI,
       functionName: "createCampaign",
       args: [form.clubName, targetAmount, annualInterestRate, duration] as [string, bigint, bigint, bigint],
+      // imageUrl: uploadedImageUrl (à utiliser côté backend ou smart contract si besoin)
     });
   };
 
@@ -150,6 +242,15 @@ export default function MyClubPage() {
           <div>
             <label className="block text-gray-300 mb-1">Durée (jours) *</label>
             <input name="duration" type="number" min="7" max="365" value={form.duration} onChange={handleChange} required className="w-full p-2 rounded bg-gray-800 text-white" />
+          </div>
+          <div>
+            <label className="block text-gray-300 mb-1">Image de la campagne</label>
+            <input type="file" accept="image/*" onChange={handleImageChange} className="w-full text-gray-300" />
+            {imagePreview && (
+              <div className="mt-2 flex justify-center">
+                <img src={imagePreview} alt="Aperçu" className="max-h-40 rounded-lg border border-gray-700" />
+              </div>
+            )}
           </div>
           {error && <div className="bg-red-900/30 text-red-300 p-2 rounded text-center">{error}</div>}
           {success && <div className="bg-green-900/30 text-green-300 p-2 rounded text-center">{success}</div>}
