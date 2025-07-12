@@ -133,32 +133,6 @@ The platform uses two main smart contracts on Chiliz Spicy Testnet:
 - **Allowance System**: Enable TwelfthMan contract spending
 - **Balance Tracking**: Monitor user token holdings
 
-### Key Features
-
-#### 🏆 Campaign Dashboard
-- Browse active funding campaigns
-- Real-time progress tracking
-- Campaign details and club information
-- Interactive funding interface
-
-#### 💰 Investment Management
-- Portfolio view of all contributions
-- Interest calculation and tracking
-- Refund claims for failed campaigns
-- Historical transaction data
-
-#### 🏅 Leaderboard System
-- Top contributors ranking
-- Club-specific leaderboards
-- Community recognition features
-- Achievement badges
-
-#### 👤 User Profile
-- Personal investment history
-- KYC verification status
-- Wallet connection management
-- Settings and preferences
-
 ## Getting Started
 
 ### Prerequisites
