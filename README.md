@@ -130,28 +130,4 @@ MONGODB_URI=mongodb+srv://..................
 3. Acquire PSG tokens for testing
 4. Connect wallet to the application
 
-## Technology Stack
-
-### Frontend
-- **Next.js 15**: React framework with App Router
-- **TypeScript**: Type-safe JavaScript development
-- **Tailwind CSS**: Utility-first CSS framework
-- **React**: Component-based UI library
-
-### Web3 Integration
-- **Wagmi**: React hooks for Ethereum
-- **RainbowKit**: Wallet connection interface
-- **Viem**: TypeScript Ethereum library
-- **Chiliz Network**: Sports-focused blockchain
-
-### Backend
-- **Next.js API Routes**: Serverless API endpoints
-- **MongoDB**: NoSQL database for user data
-- **Mongoose**: MongoDB object modeling
-
-### Smart Contracts
-- **Solidity**: Contract programming language
-- **Chiliz Testnet**: Deployment network
-- **OpenZeppelin**: Secure contract templates
----
 
