@@ -45,6 +45,32 @@ export default function MyClubPage() {
     hash: txHash && txHash.startsWith('0x') ? (txHash as `0x${string}`) : undefined
   });
 
+  // Gérer les succès et erreurs
+  useEffect(() => {
+    if (txData) {
+      setTxHash(txData);
+      setSuccess("Transaction envoyée !");
+    }
+  }, [txData]);
+
+  useEffect(() => {
+    if (txError) {
+      setError(txError.message || "Erreur lors de la transaction");
+    }
+  }, [txError]);
+
+  useEffect(() => {
+    if (isTxSuccess) {
+      setSuccess("Campagne créée avec succès !");
+      setForm({
+        clubName: "",
+        targetAmount: "",
+        annualInterestRate: "",
+        duration: "",
+      });
+    }
+  }, [isTxSuccess]);
+
   // Gestion du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -67,13 +93,6 @@ export default function MyClubPage() {
       abi: TWELFTH_MAN_ABI,
       functionName: "createCampaign",
       args: [form.clubName, targetAmount, annualInterestRate, duration] as [string, bigint, bigint, bigint],
-      onSuccess: (data: any) => {
-        setTxHash(data.hash);
-        setSuccess("Transaction envoyée !");
-      },
-      onError: (err: any) => {
-        setError(err.message);
-      },
     });
   };
 
