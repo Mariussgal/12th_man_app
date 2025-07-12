@@ -73,7 +73,7 @@ sequenceDiagram
     participant SmartContract
     participant Blockchain
     
-    Club->>SmartContract: createCampaign(targetAmount, interestRate)
+    Club->>SmartContract: createCampaign(...)
     SmartContract->>Blockchain: Deploy campaign
     Blockchain-->>Club: Campaign ID
     
