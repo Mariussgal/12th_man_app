@@ -144,7 +144,6 @@ export default function LendPage() {
   const campaign = jsonCampaign || (campaignData ? {
     id: parseInt(campaignId),
     clubName: campaignData.clubName,
-    league: 'Blockchain League',
     targetAmount: Number(campaignData.targetAmount) / Math.pow(10, 18),
     currentAmount: Number(campaignData.totalRaised) / Math.pow(10, 18),
     interestRate: campaignData.annualRate,
@@ -303,7 +302,6 @@ export default function LendPage() {
               <h1 className="text-2xl font-bold text-white">
                 {isCampaignLoading ? '...' : (campaignData && campaignData.clubName ? campaignData.clubName : campaign.clubName)}
               </h1>
-              <p className="text-gray-400">{campaign.league}</p>
               <p className="text-green-400 font-semibold">
                 {isCampaignLoading ? '...' : (campaignData ? `${campaignData.annualRate}%` : `${campaign.interestRate}%`)} APY
               </p>
