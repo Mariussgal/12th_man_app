@@ -53,7 +53,7 @@ graph TB
     
     subgraph "Blockchain Layer"
         J[TwelfthMan Smart Contract]
-        K[PSG Token Contract]
+        K[USDC Token Contract]
         L[Campaign Management]
     end
     
@@ -82,7 +82,7 @@ sequenceDiagram
 
 **Campaign Parameters:**
 - `clubName`: Name of the football club
-- `targetAmount`: Funding goal in PSG tokens
+- `targetAmount`: Funding goal in USDC tokens
 - `annualInterestRate`: Interest rate in basis points (e.g., 4000 = 40%)
 - `duration`: Campaign duration in seconds
 - `deadline`: Automatic calculation of end date
@@ -94,18 +94,18 @@ sequenceDiagram
     participant Fan
     participant Frontend
     participant SmartContract
-    participant PSGToken
+    participant USDC
     
     Fan->>Frontend: Select campaign and amount
-    Frontend->>PSGToken: approve(TwelfthManContract, amount)
-    PSGToken-->>Frontend: Approval confirmed
+    Frontend->>USDC: approve(TwelfthManContract, amount)
+    USDC-->>Frontend: Approval confirmed
     
     Frontend->>SmartContract: contribute(campaignId, amount)
-    SmartContract->>PSGToken: transferFrom(fan, contract, amount)
+    SmartContract->>USDC transferFrom(fan, contract, amount)
     SmartContract->>SmartContract: Update campaign state
     SmartContract-->>Frontend: Contribution confirmed
     
-    Note over Fan,PSGToken: Fan is now a campaign contributor
+    Note over Fan,USDC: Fan is now a campaign contributor
 ```
 
 ### Smart Contract Architecture
@@ -113,7 +113,7 @@ sequenceDiagram
 **Chiliz Spicy Testnet**
 ```
 TwelfthMan Contract (`0x90D3d31175b47801ea55d010629B25726aE0AD53`)
-PSG Token Contract (`0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3`)
+USDC Token Contract (`0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3`)
 ```
 
 
@@ -127,7 +127,7 @@ MONGODB_URI=mongodb+srv://..................
 #### Wallet Setup
 1. Add Chiliz Spicy Testnet to MetaMask
 2. Get testnet CHZ tokens from faucet
-3. Acquire PSG tokens for testing
+3. Acquire USDC tokens for testing
 4. Connect wallet to the application
 
 
