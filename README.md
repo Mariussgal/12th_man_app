@@ -109,25 +109,11 @@ sequenceDiagram
     Note over Fan,PSGToken: Fan is now a campaign contributor
 ```
 
-### KYC Requirements:
-
-- Club name and legal status
-- Registration number and address
-- Representative identification
-- Legal documentation links
-- Optional federation affiliation
-
 ### Smart Contract Architecture
 
 The platform uses two main smart contracts on Chiliz Spicy Testnet:
 
 #### TwelfthMan Contract (`0x90D3d31175b47801ea55d010629B25726aE0AD53`)
-- **Campaign Management**: Create, fund, and manage campaigns
-- **Contribution Tracking**: Record all fan contributions
-- **Interest Calculation**: Compute returns based on campaign terms
-- **Refund System**: Handle unsuccessful campaign refunds
-- **Access Control**: Manage permissions and KYC requirements
-
 #### PSG Token Contract (`0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3`)
 
 ### Configuration
