@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import Sidemenu from "./components/Sidemenu";
 import { Providers } from './providers';
 import AccountGate from "./components/AccountGate";
+import ResponsiveLayout from "./components/ResponsiveLayout";
 
 
 const geistSans = Geist({
@@ -46,34 +47,31 @@ export default function RootLayout({
             />
           </div>
 
-        {/* Sidemenu */}
-        <Sidemenu />
-        
-        {/* Main Layout with offset for sidebar */}
-        <div className="ml-64 min-h-screen flex flex-col relative z-10">
-          {/* Top Header */}
-          <Header/>
-          <AccountGate />
+          {/* Responsive Layout Wrapper */}
+          <ResponsiveLayout>
+            {/* Top Header */}
+            <Header/>
+            <AccountGate />
 
-          {/* Main Content */}
-          <main className="flex-1">
-            {children}
-          </main>
+            {/* Main Content */}
+            <main className="flex-1">
+              {children}
+            </main>
 
-          {/* Footer */}
-          <footer className=" backdrop-blur-sm mt-20">
-            <div className="px-6 py-8">
-              <div className="text-center">
-                <p className="text-gray-400">
-                  © 2025 12th Man - Be the 12th man on the field
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  Built on Chiliz 
-                </p>
+            {/* Footer */}
+            <footer className=" backdrop-blur-sm mt-20">
+              <div className="px-6 py-8">
+                <div className="text-center">
+                  <p className="text-gray-400">
+                    © 2025 12th Man - Be the 12th man on the field
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Built on Chiliz 
+                  </p>
+                </div>
               </div>
-            </div>
-          </footer>
-        </div>
+            </footer>
+          </ResponsiveLayout>
         </Providers>
       </body>
     </html>
