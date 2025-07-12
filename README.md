@@ -101,7 +101,7 @@ sequenceDiagram
     USDC-->>Frontend: Approval confirmed
     
     Frontend->>SmartContract: contribute(campaignId, amount)
-    SmartContract->>USDC transferFrom(fan, contract, amount)
+    SmartContract->>USDC: transferFrom(fan, contract, amount)
     SmartContract->>SmartContract: Update campaign state
     SmartContract-->>Frontend: Contribution confirmed
     
