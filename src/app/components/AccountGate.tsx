@@ -5,8 +5,8 @@ import { useAccount } from "wagmi";
 import { useRouter, usePathname } from "next/navigation";
 
 const ACCOUNT_TYPES = [
-  { value: "user", label: "Je veux prêter à un club" },
-  { value: "club", label: "Je représente un club" },
+  { value: "user", label: "I want to lend to a club" },
+  { value: "club", label: "I represent a club" },
 ];
 
 export default function AccountGate() {
@@ -97,7 +97,7 @@ export default function AccountGate() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="bg-gray-900 rounded-xl p-8 max-w-sm w-full border border-gray-700 shadow-lg">
-          <h2 className="text-xl font-bold text-white mb-4 text-center">Choisissez votre type de compte</h2>
+          <h2 className="text-xl font-bold text-white mb-4 text-center">Choose your account type</h2>
           <div className="space-y-4 mb-4">
             {ACCOUNT_TYPES.map((type) => (
               <button
@@ -135,10 +135,10 @@ export default function AccountGate() {
           >
             ×
           </button>
-          <h2 className="text-xl font-bold text-white mb-4">Vérification KYC requise</h2>
-          <p className="text-gray-300 mb-4">Vous devez compléter le KYC pour accéder aux fonctionnalités club.</p>
+          <h2 className="text-xl font-bold text-white mb-4">KYC verification required</h2>
+          <p className="text-gray-300 mb-4">You must complete KYC to access club features.</p>
           <button className="w-full py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all" onClick={() => router.push("/kyc") }>
-            Remplir le formulaire KYC
+            Fill out the KYC form
           </button>
         </div>
       </div>
