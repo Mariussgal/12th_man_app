@@ -49,10 +49,6 @@ const Sidemenu = () => {
       path: "/leaderboard",
     },
     {
-      name: "Profile",
-      path: "/profile",
-    },
-    {
       name: "How it works",
       path: "/how-it-works",
     },
@@ -109,6 +105,21 @@ const Sidemenu = () => {
               </button>
             </li>
           ))}
+          {/* Onglet Profile, visible seulement pour user */}
+          {isConnected && address && accountType === 'user' && (
+            <li key="Profile">
+              <button
+                onClick={() => router.push("/profile")}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans cursor-big ${
+                  pathname === "/profile"
+                    ? "bg-white/10 backdrop-blur-md text-white "
+                    : "text-gray-300 hover:text-white hover:bg-white/5 hover:backdrop-blur-sm"
+                }`}
+              >
+                <span className="font-medium">Profile</span>
+              </button>
+            </li>
+          )}
           {/* Onglet My club, visible seulement pour club */}
           {isConnected && address && accountType === 'club' && (
             <li key="My club">
