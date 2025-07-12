@@ -82,14 +82,23 @@ export default function MyClubPage() {
 
   useEffect(() => {
     const saveImage = async () => {
+      console.log('saveImage called with:', { isTxSuccess, txHash, imageUrl, publicClient: !!publicClient });
+      
       if (isTxSuccess && txHash && imageUrl && publicClient) {
         try {
+          console.log('Getting transaction receipt for hash:', txHash);
           const receipt = await publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
+          console.log('Transaction receipt:', receipt);
+          
           // Décoder l'event CampaignCreated
           const eventSignature = getEventSelector(
             "CampaignCreated(uint256,address,string,uint256,uint256,uint256,uint256)"
           );
+          console.log('Event signature:', eventSignature);
+          
           const log = receipt.logs.find(log => log.topics[0] === eventSignature);
+          console.log('Found log:', log);
+          
           if (log) {
             const decoded = decodeEventLog({
               abi: [
@@ -111,17 +120,27 @@ export default function MyClubPage() {
               data: log.data,
               topics: log.topics,
             });
+            console.log('Decoded event:', decoded);
+            
             const campaignId = Number(decoded.args.campaignId);
+            console.log('Extracted campaign ID:', campaignId);
+            
             // Enregistrer dans MongoDB
-            await fetch('/api/campaign-image', {
+            console.log('Saving to MongoDB:', { campaignId, imageUrl });
+            const response = await fetch('/api/campaign-image', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ campaignId, imageUrl }),
             });
+            
+            const result = await response.json();
+            console.log('MongoDB save result:', result);
+          } else {
+            console.log('No CampaignCreated event found in logs');
           }
         } catch (e) {
           // Optionnel : afficher une erreur si besoin
-          console.error('Erreur lors de l’enregistrement de l’image de campagne :', e);
+          console.error('Erreur lors de l\'enregistrement de l\'image de campagne :', e);
         }
       }
     };

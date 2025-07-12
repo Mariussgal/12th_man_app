@@ -87,22 +87,32 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchImages() {
+      console.log('fetchImages called with campaigns:', campaigns);
+      
       const images: {[key: number]: string} = {};
       await Promise.all(
         campaigns.map(async (campaign) => {
           try {
+            console.log(`Fetching image for campaign ${campaign.id}`);
             const res = await fetch(`/api/campaign-image?campaignId=${campaign.id}`);
+            console.log(`Response for campaign ${campaign.id}:`, res.status);
+            
             if (res.ok) {
               const data = await res.json();
+              console.log(`Image data for campaign ${campaign.id}:`, data);
               if (data.imageUrl) {
                 images[campaign.id] = data.imageUrl;
               }
+            } else {
+              console.log(`No image found for campaign ${campaign.id}`);
             }
           } catch (e) {
-            // ignore
+            console.error(`Error fetching image for campaign ${campaign.id}:`, e);
           }
         })
       );
+      
+      console.log('Final images mapping:', images);
       setCampaignImages(images);
     }
     if (campaigns.length > 0) fetchImages();
