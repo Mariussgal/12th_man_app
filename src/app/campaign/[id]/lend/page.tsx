@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import campaignsData from '../../../../data/campaigns.json';
-import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from '../../../../config/contracts';
+import { CONTRACTS, TWELFTH_MAN_ABI, USDC_TOKEN_ABI } from '../../../../config/contracts';
 
 export default function LendPage() {
   const params = useParams();
@@ -27,7 +27,11 @@ export default function LendPage() {
     error: contributeError 
   } = useWriteContract();
 
+<<<<<<< Updated upstream
   // Hook pour écrire dans le contrat PSG (approbation)
+=======
+  // Hook to write to USDC contract (approval)
+>>>>>>> Stashed changes
   const { 
     writeContract: approve, 
     data: approveHash,
@@ -44,19 +48,30 @@ export default function LendPage() {
     hash: approveHash,
   });
 
+<<<<<<< Updated upstream
   // Lecture du solde PSG
   const { data: psgBalance = '0', error: balanceError, isLoading: isBalanceLoading } = useReadContract({
     address: CONTRACTS.PSG_TOKEN as `0x${string}`,
     abi: PSG_TOKEN_ABI,
+=======
+  // Read USDC balance
+  const { data: usdcBalance = '0', error: balanceError, isLoading: isBalanceLoading } = useReadContract({
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: USDC_TOKEN_ABI,
+>>>>>>> Stashed changes
     functionName: 'balanceOf',
     args: [address as `0x${string}`],
     query: { enabled: !!address }
   });
 
+<<<<<<< Updated upstream
   // Lecture de l'allowance PSG
+=======
+  // Read USDC allowance
+>>>>>>> Stashed changes
   const { data: allowance = '0', error: allowanceError, isLoading: isAllowanceLoading } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: USDC_TOKEN_ABI,
     functionName: 'allowance',
     args: [address as `0x${string}`, CONTRACTS.TWELFTH_MAN as `0x${string}`],
     query: { enabled: !!address }
@@ -64,19 +79,31 @@ export default function LendPage() {
 
 
 
+<<<<<<< Updated upstream
   // Lecture des décimales du token PSG pour vérification
+=======
+  // Read USDC token decimals for verification
+>>>>>>> Stashed changes
   const { data: tokenDecimals } = useReadContract({
-    address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-    abi: PSG_TOKEN_ABI,
+    address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+    abi: USDC_TOKEN_ABI,
     functionName: 'decimals',
     query: { enabled: !!address }
   });
 
+<<<<<<< Updated upstream
   // Fonction pour formater correctement le solde PSG
   const formatPSGBalance = (rawBalance: bigint | string, decimals: number | undefined) => {
     if (!rawBalance) return '0.00';
     
     // Si decimals n'est pas encore chargé, assumer 0 décimales (cas du PSG)
+=======
+  // Function to correctly format USDC balance
+  const formatUSDCBalance = (rawBalance: bigint | string, decimals: number | undefined) => {
+    if (!rawBalance) return '0.00';
+    
+    // If decimals not loaded yet, assume 0 decimals (USDC case)
+>>>>>>> Stashed changes
     const actualDecimals = decimals ?? 0;
     
     const balance = BigInt(rawBalance.toString());
@@ -136,9 +163,15 @@ export default function LendPage() {
       setAmount('');
       setError('');
       
+<<<<<<< Updated upstream
       // Actualiser les données de campagne et le solde PSG
       refetchCampaignInfo();
       // Le solde PSG se recharge automatiquement
+=======
+      // Refresh campaign data and USDC balance
+      refetchCampaignInfo();
+      // USDC balance reloads automatically
+>>>>>>> Stashed changes
     }
   }, [contributeHash, isContributeConfirming, refetchCampaignInfo]);
 
@@ -186,10 +219,17 @@ export default function LendPage() {
     try {
       setError('');
       
+<<<<<<< Updated upstream
       // Utiliser 0 décimales par défaut si pas encore chargé (cas du PSG)
       const actualDecimals = tokenDecimals ?? 0;
       
       // Convertir le montant avec les bonnes décimales du token PSG
+=======
+      // Use 0 decimals by default if not loaded yet (USDC case)
+      const actualDecimals = tokenDecimals ?? 0;
+      
+      // Convert amount with correct USDC token decimals
+>>>>>>> Stashed changes
       const amountInTokenUnits = BigInt(parseFloat(amount) * (10 ** actualDecimals));
       
       // Vérifier l'allowance
@@ -200,8 +240,8 @@ export default function LendPage() {
         setSuccess('Étape 1/2 : Approbation des tokens en cours...');
         
         approve({
-          address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-          abi: PSG_TOKEN_ABI,
+          address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+          abi: USDC_TOKEN_ABI,
           functionName: 'approve',
           args: [CONTRACTS.TWELFTH_MAN as `0x${string}`, amountInTokenUnits],
         });
@@ -231,9 +271,15 @@ export default function LendPage() {
     }).format(amount);
   };
 
+<<<<<<< Updated upstream
   // Formater les montants PSG depuis le smart contract
   const formatPSGAmount = (amount: bigint, forceEtherDecimals = false) => {
     console.log('Formatage PSG:', { amount: amount.toString(), tokenDecimals, forceEtherDecimals });
+=======
+  // Format USDC amounts from smart contract
+  const formatUSDCAmount = (amount: bigint, forceEtherDecimals = false) => {
+    console.log('USDC formatting:', { amount: amount.toString(), tokenDecimals, forceEtherDecimals });
+>>>>>>> Stashed changes
     
     // Si c'est un très gros nombre, c'est probablement en wei (18 décimales)
     const actualDecimals = forceEtherDecimals || amount > BigInt("1000000000000000000") ? 18 : (tokenDecimals ?? 0);
@@ -288,13 +334,21 @@ export default function LendPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-white font-bold text-lg">
+<<<<<<< Updated upstream
                 {isCampaignLoading ? '...' : campaignData ? `${formatPSGAmount(campaignData.totalRaised)} PSG` : '0 PSG'}
+=======
+                {isCampaignLoading ? '...' : campaignData ? `${formatUSDCAmount(campaignData.totalRaised)} USDC` : '0 USDC'}
+>>>>>>> Stashed changes
               </div>
               <div className="text-gray-400 text-sm">Collecté</div>
             </div>
             <div>
               <div className="text-white font-bold text-lg">
+<<<<<<< Updated upstream
                 {isCampaignLoading ? '...' : campaignData ? `${formatPSGAmount(campaignData.targetAmount, true)} PSG` : `${formatCurrency(campaign.targetAmount)}`}
+=======
+                {isCampaignLoading ? '...' : campaignData ? `${formatUSDCAmount(campaignData.targetAmount, true)} USDC` : `${formatCurrency(campaign.targetAmount)}`}
+>>>>>>> Stashed changes
               </div>
               <div className="text-gray-400 text-sm">Objectif</div>
             </div>
@@ -332,12 +386,16 @@ export default function LendPage() {
               </p>
             </div>
 
-            {/* Solde PSG */}
+            {/* Solde USDC */}
             <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-white mb-3">Vos tokens PSG</h3>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white mb-1">
+<<<<<<< Updated upstream
                   {isBalanceLoading ? 'Chargement...' : formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals as number)} PSG
+=======
+                  {isBalanceLoading ? 'Loading...' : formatUSDCBalance(usdcBalance as bigint || BigInt(0), tokenDecimals as number)} USDC
+>>>>>>> Stashed changes
                 </div>
                 <div className="text-gray-400 text-sm">Solde disponible</div>
               </div>
@@ -414,13 +472,13 @@ export default function LendPage() {
                   isLoading || 
                   !amount || 
                   parseFloat(amount) <= 0 ||
-                  parseFloat(amount) > parseFloat(formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals))
+                  parseFloat(amount) > parseFloat(formatUSDCBalance(usdcBalance as bigint || BigInt(0), tokenDecimals))
                 }
                 className={`w-full py-3 rounded-lg font-medium transition-all ${
                   isLoading || 
                   !amount || 
                   parseFloat(amount) <= 0 ||
-                  parseFloat(amount) > parseFloat(formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals))
+                  parseFloat(amount) > parseFloat(formatUSDCBalance(usdcBalance as bigint || BigInt(0), tokenDecimals))
                     ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
                 }`}
@@ -430,10 +488,14 @@ export default function LendPage() {
             </div>
 
             <div className="mt-4 text-xs text-gray-400 space-y-2">
-              {amount && parseFloat(amount) > parseFloat(formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)) && (
+              {amount && parseFloat(amount) > parseFloat(formatUSDCBalance(usdcBalance as bigint || BigInt(0), tokenDecimals)) && (
                 <div className="bg-red-900/20 border border-red-500/30 rounded p-2">
                   <p className="text-red-400">
+<<<<<<< Updated upstream
                     ❌ Solde insuffisant. Vous avez {formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)} PSG disponibles.
+=======
+                    ❌ Solde insuffisant. Vous avez {formatUSDCBalance(usdcBalance as bigint || BigInt(0), tokenDecimals)} USDC disponibles.
+>>>>>>> Stashed changes
                   </p>
                 </div>
               )}

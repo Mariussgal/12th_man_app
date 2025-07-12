@@ -4,8 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import campaignsData from "../data/campaigns.json";
 import Link from "next/link";
+<<<<<<< Updated upstream
 import { useReadContract } from 'wagmi';
 import { CONTRACTS, TWELFTH_MAN_ABI, PSG_TOKEN_ABI } from "../config/contracts";
+=======
+import { useReadContract, usePublicClient } from 'wagmi';
+import { getEventSelector } from 'viem';
+import { CONTRACTS, TWELFTH_MAN_ABI, USDC_TOKEN_ABI } from "../config/contracts";
+>>>>>>> Stashed changes
 
 export default function Home() {
   const campaigns = campaignsData;
@@ -49,10 +55,10 @@ export default function Home() {
       args: [BigInt(campaignId)],
     });
 
-    // Lecture des décimales du token PSG pour la conversion correcte
+    // Lecture des décimales du token USDC pour la conversion correcte
     const { data: tokenDecimals } = useReadContract({
-      address: CONTRACTS.PSG_TOKEN as `0x${string}`,
-      abi: PSG_TOKEN_ABI,
+      address: CONTRACTS.USDC_TOKEN as `0x${string}`,
+      abi: USDC_TOKEN_ABI,
       functionName: 'decimals',
     });
 
@@ -65,11 +71,11 @@ export default function Home() {
     // Récupérer le nom du club (index 1)
     const smartContractClubName = campaignInfo ? campaignInfo[1] || '' : '';
     
-    // Fonction pour formater les montants PSG avec les bonnes décimales
-    const formatPSGAmount = (amount: bigint) => {
+    // Fonction pour formater les montants USDC avec les bonnes décimales
+    const formatUSDCAmount = (amount: bigint) => {
       if (!amount) return 0;
       
-      // Utiliser les décimales du token PSG (généralement 0 pour Chiliz)
+      // Utiliser les décimales du token USDC (généralement 0 pour Chiliz)
       const actualDecimals = tokenDecimals ?? 0;
       
       // Si c'est un très gros nombre, c'est probablement stocké en wei (18 décimales)
@@ -90,11 +96,11 @@ export default function Home() {
     
     // Récupérer le montant objectif (index 2) - convertir avec les bonnes décimales
     const rawTargetAmount = campaignInfo ? campaignInfo[2] || BigInt(0) : BigInt(0);
-    const targetAmount = formatPSGAmount(rawTargetAmount);
+    const targetAmount = formatUSDCAmount(rawTargetAmount);
     
     // Récupérer le montant collecté (index 3) - convertir avec les bonnes décimales
     const rawCollectedAmount = campaignInfo ? campaignInfo[3] || BigInt(0) : BigInt(0);
-    const collectedAmount = formatPSGAmount(rawCollectedAmount);
+    const collectedAmount = formatUSDCAmount(rawCollectedAmount);
     
     // Récupérer le taux d'intérêt annuel (index 4) - convertir depuis basis points 
     const rawAnnualInterestRate = campaignInfo ? campaignInfo[4] || BigInt(0) : BigInt(0);

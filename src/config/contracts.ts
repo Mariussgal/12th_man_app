@@ -4,8 +4,12 @@ export const CONTRACTS = {
   TWELFTH_MAN: "0x1D433F6fDAB22Ea9A4267F74841B4AAA0F5957F4", // Votre adresse de contrat TwelfthMan déployé
   
   // Adresses des tokens sur Chiliz Spicy Testnet (88882)
+<<<<<<< Updated upstream
   // ⚠️ VÉRIFIEZ CES ADRESSES - elles peuvent être différentes sur Spicy Testnet
   PSG_TOKEN: "0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3", // À vérifier
+=======
+  USDC_TOKEN: "0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3", // À vérifier
+>>>>>>> Stashed changes
   WCHZ_TOKEN: "0x678c34581db0a7808d0aC669d7025f1408C9a3C6", // À vérifier
 };
 
@@ -95,8 +99,8 @@ export const TWELFTH_MAN_ABI = [
   }
 ] as const;
 
-// ABI étendu pour le token PSG (fonctions ERC20 + debug)
-export const PSG_TOKEN_ABI = [
+// ABI étendu pour le token USDC (fonctions ERC20 + debug)
+export const USDC_TOKEN_ABI = [
   {
     "inputs": [
       {"internalType": "address", "name": "spender", "type": "address"},
