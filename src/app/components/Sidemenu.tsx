@@ -68,7 +68,7 @@ const Sidemenu = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => router.push("/")}
-            className="focus:outline-none"
+            className="focus:outline-none cursor-big"
             title="Retour au menu principal"
             aria-label="Retour au menu principal"
           >
@@ -84,7 +84,7 @@ const Sidemenu = () => {
             <li key={item.name}>
               <button
                 onClick={() => handleNavigation(item)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans cursor-big ${
                   pathname === item.path
                     ? "bg-white/10 backdrop-blur-md text-white "
                     : "text-gray-300 hover:text-white hover:bg-white/5 hover:backdrop-blur-sm"
@@ -99,7 +99,7 @@ const Sidemenu = () => {
             <li key="My club">
               <button
                 onClick={() => router.push("/my-club")}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 font-sans cursor-big ${
                   pathname === "/my-club"
                     ? "bg-white/10 backdrop-blur-md text-white "
                     : "text-gray-300 hover:text-white hover:bg-white/5 hover:backdrop-blur-sm"

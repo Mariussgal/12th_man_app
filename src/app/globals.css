@@ -47,4 +47,13 @@ code, pre, .font-mono {
   backface-visibility: hidden;
 }
 
+.cursor-big {
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(.4,2,.6,1);
+}
+.cursor-big:hover, .cursor-big:focus {
+  transform: scale(1.12);
+  z-index: 10;
+}
+
 
