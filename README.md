@@ -136,14 +136,6 @@ The platform uses two main smart contracts on Chiliz Spicy Testnet:
 ```env
 # Database
 MONGODB_URI=mongodb+srv://..................
-
-# Chiliz Network
-NEXT_PUBLIC_CHILIZ_RPC_URL=https://spicy-rpc.chiliz.com
-NEXT_PUBLIC_CHILIZ_CHAIN_ID=88882
-
-# Smart Contracts
-NEXT_PUBLIC_TWELFTH_MAN_CONTRACT=0x90D3d31175b47801ea55d010629B25726aE0AD53
-NEXT_PUBLIC_PSG_TOKEN_CONTRACT=0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3
 ```
 
 #### Wallet Setup
@@ -151,15 +143,6 @@ NEXT_PUBLIC_PSG_TOKEN_CONTRACT=0xb0Fa395a3386800658B9617F90e834E2CeC76Dd3
 2. Get testnet CHZ tokens from faucet
 3. Acquire PSG tokens for testing
 4. Connect wallet to the application
-
-### Usage
-
-1. **Connect Wallet**: Use RainbowKit to connect your Web3 wallet
-2. **Complete KYC**: Submit required verification documents
-3. **Browse Campaigns**: Explore available club funding opportunities
-4. **Make Investment**: Choose campaign and contribute PSG tokens
-5. **Track Progress**: Monitor your investments and returns
-6. **Claim Rewards**: Withdraw earnings when campaigns succeed
 
 ## Technology Stack
 
