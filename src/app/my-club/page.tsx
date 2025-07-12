@@ -106,11 +106,27 @@ export default function MyClubPage() {
     return <div className="max-w-xl mx-auto mt-10 text-center text-white">Accès réservé aux clubs.</div>;
   }
   if (!kycValidated) {
+    // Déterminer le statut à afficher
+    let statutAffiche = "Non soumis";
+    if (typeof window !== "undefined" && address && localStorage.getItem(`kyc_submitted_${address}`) === 'true') {
+      statutAffiche = "En attente";
+    }
     return (
       <div className="max-w-xl mx-auto mt-10 text-center text-white">
         <h2 className="text-2xl font-bold mb-4">Statut KYC</h2>
-        <p>Votre KYC est : <span className="font-bold">{kycStatus}</span></p>
+        <p>
+          Votre KYC est :
+          <span className={`font-bold ml-2 ${statutAffiche === "En attente" ? "text-yellow-400" : "text-red-400"}`}>
+            {statutAffiche}
+          </span>
+        </p>
         <p className="mt-4 text-gray-400">Vous ne pouvez créer une campagne qu'une fois votre KYC validé.</p>
+        <button
+          className="mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg"
+          onClick={() => window.location.href = "/kyc"}
+        >
+          Faire la demande de KYC
+        </button>
       </div>
     );
   }
