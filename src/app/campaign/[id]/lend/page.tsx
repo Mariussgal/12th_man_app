@@ -19,7 +19,7 @@ export default function LendPage() {
   // Hooks wagmi
   const { address, isConnected } = useAccount();
   
-  // Hook pour écrire dans le contrat (contribution)
+  // Hook to write to contract (contribution)
   const { 
     writeContract: contribute, 
     data: contributeHash,
@@ -27,7 +27,7 @@ export default function LendPage() {
     error: contributeError 
   } = useWriteContract();
 
-  // Hook pour écrire dans le contrat PSG (approbation)
+  // Hook to write to PSG contract (approval)
   const { 
     writeContract: approve, 
     data: approveHash,
@@ -35,7 +35,7 @@ export default function LendPage() {
     error: approveError 
   } = useWriteContract();
 
-  // Attendre les confirmations de transactions
+  // Wait for transaction confirmations
   const { isLoading: isContributeConfirming } = useWaitForTransactionReceipt({
     hash: contributeHash,
   });
@@ -44,7 +44,7 @@ export default function LendPage() {
     hash: approveHash,
   });
 
-  // Lecture du solde PSG
+  // Read PSG balance
   const { data: psgBalance = '0', error: balanceError, isLoading: isBalanceLoading } = useReadContract({
     address: CONTRACTS.PSG_TOKEN as `0x${string}`,
     abi: PSG_TOKEN_ABI,
@@ -53,7 +53,7 @@ export default function LendPage() {
     query: { enabled: !!address }
   });
 
-  // Lecture de l'allowance PSG
+  // Read PSG allowance
   const { data: allowance = '0', error: allowanceError, isLoading: isAllowanceLoading } = useReadContract({
     address: CONTRACTS.PSG_TOKEN as `0x${string}`,
     abi: PSG_TOKEN_ABI,
@@ -64,7 +64,7 @@ export default function LendPage() {
 
 
 
-  // Lecture des décimales du token PSG pour vérification
+  // Read PSG token decimals for verification
   const { data: tokenDecimals } = useReadContract({
     address: CONTRACTS.PSG_TOKEN as `0x${string}`,
     abi: PSG_TOKEN_ABI,
@@ -72,11 +72,11 @@ export default function LendPage() {
     query: { enabled: !!address }
   });
 
-  // Fonction pour formater correctement le solde PSG
+  // Function to correctly format PSG balance
   const formatPSGBalance = (rawBalance: bigint | string, decimals: number | undefined) => {
     if (!rawBalance) return '0.00';
     
-    // Si decimals n'est pas encore chargé, assumer 0 décimales (cas du PSG)
+    // If decimals not loaded yet, assume 0 decimals (PSG case)
     const actualDecimals = decimals ?? 0;
     
     const balance = BigInt(rawBalance.toString());
@@ -86,7 +86,7 @@ export default function LendPage() {
     return formattedBalance.toFixed(2);
   };
 
-  // Lecture des infos de campagne
+  // Read campaign info
   const { data: campaignInfo, refetch: refetchCampaignInfo, isLoading: isCampaignLoading } = useReadContract({
     address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
     abi: TWELFTH_MAN_ABI,
@@ -95,17 +95,17 @@ export default function LendPage() {
     query: { enabled: !!campaignId }
   });
 
-  // Données de campagne depuis le JSON (pour l'affichage)
+  // Campaign data from JSON (for display)
   const campaign = campaignsData.find((c: any) => c.id === parseInt(campaignId));
 
   const isLoading = isContributePending || isApprovePending || isContributeConfirming || isApproveConfirming;
 
 
 
-  // Debug des données brutes du smart contract
-  console.log('Données brutes getCampaignInfo:', campaignInfo);
+  // Debug raw smart contract data
+  console.log('Raw getCampaignInfo data:', campaignInfo);
   if (campaignInfo) {
-    console.log('Détail des valeurs:', {
+    console.log('Value details:', {
       index0: campaignInfo[0]?.toString(),
       index1: campaignInfo[1]?.toString(),
       index2: campaignInfo[2]?.toString(),
@@ -117,28 +117,28 @@ export default function LendPage() {
     });
   }
 
-  // Extraction des données du smart contract (avec contributorsCount ajouté)
+  // Extract smart contract data (with contributorsCount added)
   const campaignData = campaignInfo ? {
-    clubName: campaignInfo[1] || '',                 // clubName (index 1) ← NOUVEAU !
+    clubName: campaignInfo[1] || '',                 // clubName (index 1) ← NEW!
     targetAmount: campaignInfo[2] || BigInt(0),      // targetAmount (index 2)
     totalRaised: campaignInfo[3] || BigInt(0),       // collectedAmount (index 3)
-    annualRate: (Number(campaignInfo[4] || BigInt(0))) / 100,  // annualInterestRate (index 4) converti depuis basis points
+    annualRate: (Number(campaignInfo[4] || BigInt(0))) / 100,  // annualInterestRate (index 4) converted from basis points
     deadline: campaignInfo[5] || BigInt(0),          // deadline (index 5)
     isActive: campaignInfo[6] || false,              // isActive (index 6)
     isCompleted: campaignInfo[7] || false,           // isCompleted (index 7)
     contributorsCount: campaignInfo[8] || BigInt(0)  // contributorsCount (index 8)
   } : null;
 
-  // Gérer les succès et erreurs
+  // Handle success and errors
   useEffect(() => {
     if (contributeHash && !isContributeConfirming) {
-      setSuccess('Prêt réussi ! Votre contribution a été enregistrée.');
+      setSuccess('Loan successful! Your contribution has been recorded.');
       setAmount('');
       setError('');
       
-      // Actualiser les données de campagne et le solde PSG
+      // Refresh campaign data and PSG balance
       refetchCampaignInfo();
-      // Le solde PSG se recharge automatiquement
+      // PSG balance reloads automatically
     }
   }, [contributeHash, isContributeConfirming, refetchCampaignInfo]);
 
@@ -179,25 +179,25 @@ export default function LendPage() {
 
   const handleLend = async () => {
     if (!amount) {
-      setError('Veuillez saisir un montant valide');
+      setError('Please enter a valid amount');
       return;
     }
 
     try {
       setError('');
       
-      // Utiliser 0 décimales par défaut si pas encore chargé (cas du PSG)
+      // Use 0 decimals by default if not loaded yet (PSG case)
       const actualDecimals = tokenDecimals ?? 0;
       
-      // Convertir le montant avec les bonnes décimales du token PSG
+      // Convert amount with correct PSG token decimals
       const amountInTokenUnits = BigInt(parseFloat(amount) * (10 ** actualDecimals));
       
-      // Vérifier l'allowance
+      // Check allowance
       const currentAllowance = BigInt(allowance?.toString() || '0');
       
       if (currentAllowance < amountInTokenUnits) {
-        // Étape 1: Approbation nécessaire
-        setSuccess('Étape 1/2 : Approbation des tokens en cours...');
+        // Step 1: Approval needed
+        setSuccess('Step 1/2: Token approval in progress...');
         
         approve({
           address: CONTRACTS.PSG_TOKEN as `0x${string}`,
@@ -206,8 +206,8 @@ export default function LendPage() {
           args: [CONTRACTS.TWELFTH_MAN as `0x${string}`, amountInTokenUnits],
         });
       } else {
-        // Étape 2: Contribution directe (allowance déjà suffisante)
-        setSuccess('Prêt en cours...');
+        // Step 2: Direct contribution (allowance already sufficient)
+        setSuccess('Loan in progress...');
         
         contribute({
           address: CONTRACTS.TWELFTH_MAN as `0x${string}`,
@@ -218,8 +218,8 @@ export default function LendPage() {
       }
       
     } catch (error: any) {
-      console.error('Erreur lors du prêt:', error);
-      setError(error.message || 'Erreur lors de la transaction');
+      console.error('Error during loan:', error);
+      setError(error.message || 'Error during transaction');
     }
   };
 
@@ -231,23 +231,23 @@ export default function LendPage() {
     }).format(amount);
   };
 
-  // Formater les montants PSG depuis le smart contract
+  // Format PSG amounts from smart contract
   const formatPSGAmount = (amount: bigint, forceEtherDecimals = false) => {
-    console.log('Formatage PSG:', { amount: amount.toString(), tokenDecimals, forceEtherDecimals });
+    console.log('PSG formatting:', { amount: amount.toString(), tokenDecimals, forceEtherDecimals });
     
-    // Si c'est un très gros nombre, c'est probablement en wei (18 décimales)
+    // If it's a very large number, it's probably in wei (18 decimals)
     const actualDecimals = forceEtherDecimals || amount > BigInt("1000000000000000000") ? 18 : (tokenDecimals ?? 0);
     const divisor = BigInt(10 ** actualDecimals);
     
     const formatted = amount / divisor;
-    console.log('Résultat formatage:', formatted.toString());
+    console.log('Formatting result:', formatted.toString());
     return formatted.toString();
   };
 
   if (!campaign) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <p className="text-white text-center">Campagne non trouvée</p>
+        <p className="text-white text-center">Campaign not found</p>
       </div>
     );
   }
@@ -288,25 +288,25 @@ export default function LendPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-white font-bold text-lg">
-                {isCampaignLoading ? '...' : campaignData ? `${formatPSGAmount(campaignData.totalRaised)} PSG` : '0 PSG'}
+                {isCampaignLoading ? '...' : campaignData ? `${formatPSGAmount(campaignData.totalRaised)} USDC` : '0 USDC'}
               </div>
-              <div className="text-gray-400 text-sm">Collecté</div>
+              <div className="text-gray-400 text-sm">Collected</div>
             </div>
             <div>
               <div className="text-white font-bold text-lg">
-                {isCampaignLoading ? '...' : campaignData ? `${formatPSGAmount(campaignData.targetAmount, true)} PSG` : `${formatCurrency(campaign.targetAmount)}`}
+                {isCampaignLoading ? '...' : campaignData ? `${formatPSGAmount(campaignData.targetAmount, true)} USDC` : `${formatCurrency(campaign.targetAmount)}`}
               </div>
-              <div className="text-gray-400 text-sm">Objectif</div>
+              <div className="text-gray-400 text-sm">Goal</div>
             </div>
             <div>
               <div className="text-white font-bold text-lg">
                 {isCampaignLoading ? '...' : campaignData ? Number(campaignData.contributorsCount).toString() : '0'}
               </div>
-              <div className="text-gray-400 text-sm">Investisseurs</div>
+              <div className="text-gray-400 text-sm">Investors</div>
             </div>
             <div>
               <div className="text-white font-bold text-lg">{campaign.daysLeft}</div>
-              <div className="text-gray-400 text-sm">Jours restants</div>
+              <div className="text-gray-400 text-sm">Days remaining</div>
             </div>
           </div>
         </div>
@@ -315,18 +315,18 @@ export default function LendPage() {
       {/* Formulaire de contribution */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6">
         <h2 className="text-xl font-bold text-white mb-6">
-          Prêter à {isCampaignLoading ? '...' : (campaignData && campaignData.clubName ? campaignData.clubName : campaign.clubName)}
+          Lend to {isCampaignLoading ? '...' : (campaignData && campaignData.clubName ? campaignData.clubName : campaign.clubName)}
         </h2>
         
         {!isConnected ? (
           <div className="text-center">
-            <p className="text-gray-300 mb-4">Connectez votre wallet pour commencer</p>
-            <p className="text-gray-400 text-sm">Utilisez le bouton "Connect Wallet" en haut à droite</p>
+            <p className="text-gray-300 mb-4">Connect your wallet to start</p>
+            <p className="text-gray-400 text-sm">Use the "Connect Wallet" button at the top right</p>
           </div>
         ) : (
           <div>
             <div className="mb-4">
-              <p className="text-sm text-gray-400 mb-2">Wallet connecté:</p>
+              <p className="text-sm text-gray-400 mb-2">Connected wallet:</p>
               <p className="text-white font-mono text-sm bg-gray-800 p-2 rounded">
                 {address?.slice(0, 6)}...{address?.slice(-4)}
               </p>
@@ -334,24 +334,24 @@ export default function LendPage() {
 
             {/* Solde PSG */}
             <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-white mb-3">Vos tokens PSG</h3>
+              <h3 className="text-sm font-semibold text-white mb-3">Vos tokens USDC</h3>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white mb-1">
-                  {isBalanceLoading ? 'Chargement...' : formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals as number)} PSG
+                  {isBalanceLoading ? 'Loading...' : formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals as number)} USDC
                 </div>
-                <div className="text-gray-400 text-sm">Solde disponible</div>
+                <div className="text-gray-400 text-sm">Available balance</div>
               </div>
               
               {balanceError && (
                 <div className="mt-3 text-center text-red-400 text-sm">
-                  Erreur lors du chargement du solde
+                  Error loading balance
                 </div>
               )}
             </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Montant à prêter (PSG)
+                Montant à prêter (USDC)
               </label>
               <div className="relative">
                 <input
@@ -363,10 +363,10 @@ export default function LendPage() {
                   min="0"
                   step="0.1"
                 />
-                <div className="absolute right-3 top-3 text-gray-400 text-sm">PSG</div>
+                <div className="absolute right-3 top-3 text-gray-400 text-sm">USDC</div>
               </div>
               <p className="text-xs text-gray-400 mt-1">
-                Montant minimum: 0.1 PSG
+                Montant minimum: 0.1 USDC
               </p>
             </div>
 
@@ -383,24 +383,24 @@ export default function LendPage() {
             )}
 
             <div className="bg-gray-800/50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-white mb-2">Détails du prêt</h3>
+              <h3 className="font-semibold text-white mb-2">Loan Details</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Taux d'intérêt annuel:</span>
+                                      <span className="text-gray-400">Annual interest rate:</span>
                   <span className="text-green-400 font-semibold">
                     {isCampaignLoading ? '...' : (campaignData ? `${campaignData.annualRate}%` : `${campaign.interestRate}%`)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Durée:</span>
+                                      <span className="text-gray-400">Duration:</span>
                   <span className="text-white">{campaign.duration}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Token de prêt:</span>
-                  <span className="text-white">PSG</span>
+                                      <span className="text-gray-400">Loan token:</span>
+                  <span className="text-white">USDC</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Intérêts payés en:</span>
+                                      <span className="text-gray-400">Interest paid in:</span>
                   <span className="text-white">wCHZ</span>
                 </div>
               </div>
@@ -425,7 +425,7 @@ export default function LendPage() {
                     : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
                 }`}
               >
-                {isLoading ? 'Transaction en cours...' : 'Prêter maintenant'}
+                {isLoading ? 'Transaction in progress...' : 'Lend Now'}
               </button>
             </div>
 
@@ -433,35 +433,35 @@ export default function LendPage() {
               {amount && parseFloat(amount) > parseFloat(formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)) && (
                 <div className="bg-red-900/20 border border-red-500/30 rounded p-2">
                   <p className="text-red-400">
-                    ❌ Solde insuffisant. Vous avez {formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)} PSG disponibles.
+                    ❌ Solde insuffisant. Vous avez {formatPSGBalance(psgBalance as bigint || BigInt(0), tokenDecimals)} USDC disponibles.
                   </p>
                 </div>
               )}
               
               <p className="text-center">
-                En cliquant sur "Prêter maintenant", vous acceptez de transférer {amount || '...'} PSG 
-                au smart contract pour la campagne #{campaignId}
+                By clicking "Lend Now", you agree to transfer {amount || '...'} USDC 
+                to the smart contract for campaign #{campaignId}
               </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Informations supplémentaires */}
+      {/* Additional information */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl border border-gray-800 p-6 mt-6">
-        <h3 className="text-lg font-bold text-white mb-4">Comment ça marche</h3>
+        <h3 className="text-lg font-bold text-white mb-4">How it works</h3>
         <div className="space-y-3 text-sm text-gray-300">
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
-            <p>Vous prêtez des tokens PSG au club via le smart contract</p>
+            <p>Vous prêtez des tokens USDC au club via le smart contract</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
-            <p>Le club utilise les fonds pour ses besoins (matériel, joueurs, etc.)</p>
+            <p>The club uses the funds for its needs (equipment, players, etc.)</p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
-            <p>À la fin de la période, vous récupérez votre capital + intérêts en wCHZ</p>
+            <p>At the end of the period, you receive your capital + interest in wCHZ</p>
           </div>
         </div>
       </div>

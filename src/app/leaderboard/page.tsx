@@ -23,7 +23,7 @@ export default function LeaderboardPage() {
   const campaigns = campaignsData;
   const globalStats = getMockGlobalStats();
   
-  // Hook pour récupérer les données PSG depuis le smart contract
+  // Hook to fetch PSG data from smart contract
   const { 
     leaderboard: psgLeaderboard, 
     stats: psgStats, 
@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
     hasData: hasPSGData 
   } = usePSGLeaderboard();
 
-  // Hook pour récupérer les informations de campagne depuis le smart contract
+  // Hook to fetch campaign information from smart contract
   const CampaignInfo = ({ campaignId, children }: { 
     campaignId: number, 
     children: (data: { 
@@ -70,10 +70,10 @@ export default function LeaderboardPage() {
     setSelectedClub(campaignId);
     
     if (campaignId === 1) {
-      // PSG - utiliser les données du smart contract
+      // PSG - use smart contract data
       setLeaderboardData(psgLeaderboard);
     } else {
-      // Autres clubs - générer les données mock
+              // Other clubs - generate mock data
       const mockLeaderboard = generateMockLeaderboard(campaignId);
       setLeaderboardData(mockLeaderboard);
     }
@@ -120,7 +120,7 @@ export default function LeaderboardPage() {
         {/* Stats rapides */}
         <div className="grid grid-cols-3 gap-6 mb-8">
           {selectedClub === 1 ? (
-            // PSG - utiliser les données du hook PSG
+            // PSG - use PSG hook data
             <>
               <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 p-6 text-center">
                 <div className="text-2xl font-bold text-white mb-1">
@@ -145,12 +145,12 @@ export default function LeaderboardPage() {
                 </div>
                 <div className="text-gray-400 text-sm">Avg. Contribution</div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {isPSGLoading ? '...' : formatAmount(psgStats.averageContribution)} PSG
+                                        {isPSGLoading ? '...' : formatAmount(psgStats.averageContribution)} USDC
                 </div>
               </div>
             </>
           ) : (
-            // Autres clubs - utiliser les données mock
+            // Other clubs - use mock data
             (() => {
               const clubStats = getMockClubStats(selectedClub);
               return (
@@ -168,7 +168,7 @@ export default function LeaderboardPage() {
                     </div>
                     <div className="text-gray-400 text-sm">Total Raised</div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {formatAmount(clubStats.totalAmount)} PSG
+                      {formatAmount(clubStats.totalAmount)} USDC
                     </div>
                   </div>
                   
@@ -178,7 +178,7 @@ export default function LeaderboardPage() {
                     </div>
                     <div className="text-gray-400 text-sm">Avg. Contribution</div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {formatAmount(clubStats.averageContribution)} PSG
+                      {formatAmount(clubStats.averageContribution)} USDC
                     </div>
                   </div>
                 </>
@@ -223,7 +223,7 @@ export default function LeaderboardPage() {
                   {/* Amount */}
                   <div className="text-right">
                     <div className="text-white font-bold">
-                      {formatAmount(entry.amount)} PSG
+                      {formatAmount(entry.amount)} USDC
                     </div>
                     <div className="text-green-400 text-sm font-medium">
                       {formatAmountUSD(entry.amountUSD)}
@@ -237,16 +237,16 @@ export default function LeaderboardPage() {
           {leaderboardData.length === 0 && (
             <div className="p-12 text-center">
               {selectedClub === 1 ? (
-                // Messages spécifiques pour PSG
+                // PSG-specific messages
                 isPSGLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
-                    <div className="text-gray-400 mb-2">Loading PSG contributors...</div>
+                    <div className="text-gray-400 mb-2">Loading USDC contributors...</div>
                     <div className="text-gray-500 text-sm">Fetching data from smart contract</div>
                   </>
                 ) : psgError ? (
                   <>
-                    <div className="text-red-400 mb-2">Error loading PSG data</div>
+                    <div className="text-red-400 mb-2">Error loading USDC data</div>
                     <div className="text-gray-500 text-sm">{psgError}</div>
                   </>
                 ) : (
@@ -256,7 +256,7 @@ export default function LeaderboardPage() {
                   </>
                 )
               ) : (
-                // Messages pour autres clubs
+                                  // Messages for other clubs
                 <>
                   <div className="text-gray-400 mb-2">No contributors yet</div>
                   <div className="text-gray-500 text-sm">Be the first to contribute to this campaign!</div>
@@ -328,9 +328,9 @@ export default function LeaderboardPage() {
               {/* Stats */}
               <CampaignInfo campaignId={campaign.id}>
                 {({ contributorsCount, collectedAmount, clubName, isLoading }) => {
-                  // PSG (id: 1) utilise les données du hook PSG, les autres utilisent les données mock
+                  // PSG (id: 1) uses PSG hook data, others use mock data
                   if (campaign.id === 1) {
-                    // PSG - données du hook spécialisé
+                                          // PSG - specialized hook data
                     return (
                       <div className="space-y-4">
                         <div className="flex justify-between">
@@ -348,20 +348,20 @@ export default function LeaderboardPage() {
                         </div>
                         
                         <div className="flex justify-between">
-                          <span className="text-gray-400">In PSG:</span>
+                          <span className="text-gray-400">In USDC:</span>
                           <span className="text-gray-300 text-sm">
-                            {isPSGLoading ? '...' : formatAmount(psgStats.totalAmount)} PSG
+                            {isPSGLoading ? '...' : formatAmount(psgStats.totalAmount)} USDC
                           </span>
                         </div>
                       </div>
                     );
                   } else {
-                    // Autres clubs - données mock
+                                          // Other clubs - mock data
                     const mockStats = getMockClubStats(campaign.id);
                     const hasMockData = mockStats.totalContributors > 0;
                     
                     if (!hasMockData) {
-                      // Fallback vers données JSON si pas de mock data
+                                              // Fallback to JSON data if no mock data
                       return (
                         <div className="space-y-4">
                           <div className="flex justify-between">
@@ -393,9 +393,9 @@ export default function LeaderboardPage() {
                         </div>
                         
                         <div className="flex justify-between">
-                          <span className="text-gray-400">In PSG:</span>
+                          <span className="text-gray-400">In USDC:</span>
                           <span className="text-gray-300 text-sm">
-                            {formatAmount(mockStats.totalAmount)} PSG
+                            {formatAmount(mockStats.totalAmount)} USDC
                           </span>
                         </div>
                       </div>
