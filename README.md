@@ -1,5 +1,6 @@
 # 12th Man App
 
+Decentralized crowdfunding platform for football clubs built on Chiliz blockchain, empowering fans to support their teams while earning returns.
 
 ## Description
 
