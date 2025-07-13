@@ -135,5 +135,5 @@ MONGODB_URI=mongodb+srv://..................
 
 ### Demo Video 
 
-![](/12th man demo.mp4)
+![Demo Video](./12th%20man%20demo.mp4)
 
