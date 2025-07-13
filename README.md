@@ -135,5 +135,4 @@ MONGODB_URI=mongodb+srv://..................
 
 ### Demo Video 
 
-![Demo Video](./12th%20man%20demo.mp4)
-
+ffmpeg -i "12th man demo.mp4" -vf "fps=10,scale=800:-1:flags=lanczos,palettegen=reserve_transparent=0" -loop 0 "12th-man-demo.gif"
