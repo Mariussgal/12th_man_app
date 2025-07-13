@@ -108,6 +108,9 @@ sequenceDiagram
     Note over Fan,USDC: Fan is now a campaign contributor
 ```
 
+**How are we profitable?** --> We charge 5% of the users yield. 
+
+
 ### Smart Contract Architecture
 
 **Chiliz Spicy Testnet**
@@ -115,7 +118,6 @@ sequenceDiagram
 TwelfthMan Contract (`0x90D3d31175b47801ea55d010629B25726aE0AD53`)
 USDC Token Contract (`0xa37936f56249965d407e39347528a1a91eb1cbef`)
 ```
-
 
 
 ### Environment Variables
