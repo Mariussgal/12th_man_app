@@ -1,14 +1,14 @@
 # 12th Man App
 
-Decentralized crowdfunding platform for football clubs built on Chiliz blockchain, empowering fans to support their teams while earning returns.
+Decentralized crowdlending platform for football clubs built on Chiliz blockchain, empowering fans to support their teams while earning returns.
 
 ## Description
 
 ### What Is It?
 
-12th Man App is a Web3 crowdfunding platform that connects football fans with their favorite clubs through decentralized lending. Fans can directly fund their clubs' projects and campaigns in exchange of attractive interest rates, creating a sustainable financing model that benefits both supporters and teams.
+12th Man App is a Web3 crowdlending platform that connects football fans with their favorite clubs through decentralized lending. Fans can directly fund their clubs' projects and campaigns in exchange of attractive interest rates, creating a sustainable financing model that benefits both supporters and teams.
 
-It works like a **decentralized investment platform** where fans become the **12th on the field** by providing financial support to help their clubs achieve their goals.
+It works like a **decentralized investment platform** where fans become the **12th man on the field** by providing financial support to help their clubs achieve their goals.
 
 ### How It Works (Conceptually)
 
@@ -24,7 +24,6 @@ It works like a **decentralized investment platform** where fans become the **12
 - **Transparent**: All transactions and campaign progress visible on blockchain
 - **Profitable**: Fans earn competitive interest rates on their investments
 - **Decentralized**: No traditional banks or intermediaries involved
-- **Sport-focused**: Built specifically for football clubs and their communities
 - **Regulatory compliant**: Includes KYC processes for legal compliance
 
 ## Technical
