@@ -1,4 +1,7 @@
-# 12th Man App
+# HACKING PARIS 2025 - CHILIZ
+
+
+## 12th Man App
 
 Decentralized crowdlending platform for football clubs built on Chiliz blockchain, empowering fans to support their teams while earning returns.
 
